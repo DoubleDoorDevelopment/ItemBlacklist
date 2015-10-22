@@ -11,7 +11,9 @@ import net.minecraft.item.ItemStack;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -19,7 +21,11 @@ import java.util.Map;
  */
 public class GlobalBanList
 {
+    public static final String GLOBAL_NAME = "__GLOBAL__";
+
     public static GlobalBanList instance;
+    public final Multimap<Integer, BanList> dimesionMap = HashMultimap.create();
+    private BanList global = new BanList(GLOBAL_NAME);
 
     public static void init()
     {
@@ -28,11 +34,12 @@ public class GlobalBanList
         {
             try
             {
-                instance = Helper.GSON.fromJson(FileUtils.readFileToString(file, "UTF-8"), GlobalBanList.class);
+                String string = FileUtils.readFileToString(file, "UTF-8");
+                instance = Helper.GSON.fromJson(string, GlobalBanList.class);
             }
             catch (Exception e)
             {
-                throw new RuntimeException("There was an error loading your config file. To prevent damage, the server will be closed.");
+                throw new RuntimeException("There was an error loading your config file. To prevent damage, the server will be closed.", e);
             }
         }
         else
@@ -42,8 +49,17 @@ public class GlobalBanList
         }
     }
 
-    private Multimap<Integer, BanList> dimesionMap = HashMultimap.create();
-    private BanList global = new BanList("__GLOBAL__");
+    public static void save()
+    {
+        try
+        {
+            FileUtils.writeStringToFile(Helper.getDataFile(), Helper.GSON.toJson(instance), "UTF-8");
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static boolean isBanned(int dimensionId, ItemStack item)
     {
@@ -54,48 +70,107 @@ public class GlobalBanList
         return false;
     }
 
-    public static void process(int dim, IInventory inventory)
+    public static int process(int dim, IInventory inventory)
     {
-        process(dim, inventory, false);
+        return process(dim, inventory, false);
     }
 
-    public static void process(int dim, IInventory inventory, boolean unpackOnly)
+    public static int process(int dim, IInventory inventory, boolean unpackOnly)
     {
+        int count = 0;
         final int size = inventory.getSizeInventory();
         for (int i = 0; i < size; i++)
         {
             ItemStack itemStack = inventory.getStackInSlot(i);
             if (itemStack == null) continue;
-            boolean blocked = itemStack.getItem() == ItemBlacklisted.I;
-            boolean banned = !unpackOnly && isBanned(dim, itemStack);
-            if (blocked && !banned)
+            ItemStack processed = process(dim, itemStack, unpackOnly);
+            if (processed != itemStack)
             {
-                inventory.setInventorySlotContents(i, ItemBlacklisted.unpack(itemStack));
-            }
-            else if (banned && !blocked)
-            {
-                inventory.setInventorySlotContents(i, ItemBlacklisted.pack(itemStack));
+                count++;
+                inventory.setInventorySlotContents(i, processed);
             }
         }
+        return count;
     }
 
     public static ItemStack process(int dim, ItemStack itemStack)
     {
+        return process(dim, itemStack, false);
+    }
+
+    public static ItemStack process(int dim, ItemStack itemStack, boolean unpackOnly)
+    {
         if (itemStack == null) return null;
 
-        boolean blocked = itemStack.getItem() == ItemBlacklisted.I;
-        boolean banned = isBanned(dim, itemStack);
+        boolean packed = itemStack.getItem() == ItemBlacklisted.I && ItemBlacklisted.canUnpack(itemStack);
+        ItemStack unpacked = packed ? ItemBlacklisted.unpack(itemStack) : itemStack;
+        boolean banned = !unpackOnly && isBanned(dim, unpacked);
 
-        if (blocked && !banned)
-        {
-            return ItemBlacklisted.unpack(itemStack);
-        }
-        else if (banned && !blocked)
-        {
-            return ItemBlacklisted.pack(itemStack);
-        }
+        if (packed && !banned) return unpacked;
+        else if (banned && !packed) return ItemBlacklisted.pack(itemStack);
 
         return itemStack;
+    }
+
+    public void add(String dimensions, BanListEntry banListEntry)
+    {
+        BanList match = null;
+        if (dimensions.equals(GLOBAL_NAME))
+        {
+            match = global;
+        }
+        else
+        {
+            for (BanList banList : new HashSet<>(GlobalBanList.instance.dimesionMap.values()))
+            {
+                if (banList.dimension.equals(dimensions))
+                {
+                    if (match != null) throw new IllegalStateException("Duplicate banlist key. This is a serious issue. You should manually try to fix the json file!");
+                    match = banList;
+                }
+            }
+        }
+        if (match == null)
+        {
+            match = new BanList(dimensions);
+            for (int i : match.getDimIds())
+            {
+                dimesionMap.put(i, match);
+            }
+        }
+        if (match.banListEntryMap.containsEntry(banListEntry.getItem(), banListEntry)) throw new IllegalArgumentException("Duplicate ban list entry.");
+        match.banListEntryMap.put(banListEntry.getItem(), banListEntry);
+        save();
+    }
+
+    public boolean remove(String dimensions, BanListEntry banListEntry)
+    {
+        BanList match = null;
+        if (dimensions.equals(GLOBAL_NAME))
+        {
+            match = global;
+        }
+        else
+        {
+            for (BanList banList : new HashSet<>(GlobalBanList.instance.dimesionMap.values()))
+            {
+                if (banList.dimension.equals(dimensions))
+                {
+                    if (match != null) throw new IllegalStateException("Duplicate banlist key. This is a serious issue. You should manually try to fix the json file!");
+                    match = banList;
+                }
+            }
+        }
+        if (match == null) return false;
+        if (!match.banListEntryMap.containsEntry(banListEntry.getItem(), banListEntry)) return false;
+        match.banListEntryMap.remove(banListEntry.getItem(), banListEntry);
+        save();
+        return true;
+    }
+
+    public BanList getGlobal()
+    {
+        return global;
     }
 
     public static class Json implements JsonSerializer<GlobalBanList>, JsonDeserializer<GlobalBanList>

@@ -11,7 +11,7 @@ import net.minecraftforge.client.IItemRenderer;
 import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 
-import static net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
+import static net.minecraftforge.client.IItemRenderer.ItemRenderType.*;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -73,18 +73,30 @@ public class Renderer implements IItemRenderer
         {
             glPushMatrix();
 
-            float scale = 2f;
+            float scale = 4f;
 
             if (type == INVENTORY)
             {
                 scale = 4f;
                 glPushMatrix();
-                GL11.glTranslatef(- 2, + 3, -3.0F);
+                GL11.glTranslatef(-2, +3, -3.0F);
                 GL11.glScalef(10F, 10F, 10F);
                 GL11.glTranslatef(1.0F, 0.5F, 1.0F);
                 GL11.glScalef(1.0F, 1.0F, -1F);
                 GL11.glRotatef(210F, 1.0F, 0.0F, 0.0F);
                 GL11.glRotatef(45F, 0.0F, 1.0F, 0.0F);
+            }
+            else if (type == ENTITY)
+            {
+                scale = 2f;
+            }
+            else if (type == EQUIPPED_FIRST_PERSON)
+            {
+                GL11.glTranslatef(0.6f, 0.65f, 0.5f);
+            }
+            else if (type == EQUIPPED)
+            {
+                GL11.glTranslatef(0.6f, 0.3f, 0.6f);
             }
 
             RenderHelper.enableStandardItemLighting();

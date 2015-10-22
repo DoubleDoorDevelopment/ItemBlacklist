@@ -1,15 +1,14 @@
 package net.doubledoordev.itemblacklist;
 
-import cpw.mods.fml.client.registry.RenderingRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
+import net.doubledoordev.itemblacklist.client.ClientEventHandlers;
 import net.doubledoordev.itemblacklist.client.Renderer;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
-import net.doubledoordev.itemblacklist.client.ClientEventHandlers;
 import net.doubledoordev.itemblacklist.util.CommandBlockItem;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
 import net.doubledoordev.itemblacklist.util.ServerEventHandlers;
@@ -35,12 +34,12 @@ public class ItemBlacklist
     {
         logger = event.getModLog();
 
-        MinecraftForge.EVENT_BUS.register(ClientEventHandlers.I);
-        FMLCommonHandler.instance().bus().register(ClientEventHandlers.I);
+        GameRegistry.registerItem(ItemBlacklisted.I, ItemBlacklisted.NAME);
 
         if (event.getSide().isClient())
         {
-            GameRegistry.registerItem(ItemBlacklisted.I, ItemBlacklisted.NAME);
+            MinecraftForge.EVENT_BUS.register(ClientEventHandlers.I);
+            FMLCommonHandler.instance().bus().register(ClientEventHandlers.I);
             MinecraftForgeClient.registerItemRenderer(ItemBlacklisted.I, new Renderer());
         }
 

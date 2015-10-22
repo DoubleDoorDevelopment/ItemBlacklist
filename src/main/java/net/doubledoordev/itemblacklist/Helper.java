@@ -5,9 +5,6 @@ import com.google.gson.GsonBuilder;
 import net.doubledoordev.itemblacklist.data.BanList;
 import net.doubledoordev.itemblacklist.data.BanListEntry;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
-import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
@@ -33,4 +30,32 @@ public class Helper
         return new File(MinecraftServer.getServer().worldServers[0].getSaveHandler().getWorldDirectory(), MODID.concat(".json"));
     }
 
+    public static int[] parseDimIds(String dimension)
+    {
+        try
+        {
+            String[] split = dimension.split(", ?");
+            int[] ids = new int[split.length];
+            for (int i = 0; i < split.length; i++) ids[i] = Integer.parseInt(split[i]);
+            return ids;
+        }
+        catch (NumberFormatException ignored)
+        {
+        }
+        try
+        {
+            String[] split = dimension.split(" ?# ?", 2);
+            int start = Integer.parseInt(split[0]);
+            int end = Integer.parseInt(split[1]);
+            if (end < start) throw new IllegalArgumentException(end + "  < " + start);
+
+            int[] ids = new int[end - start];
+            for (int i = 0; i < ids.length; i++) ids[i] = start + i;
+            return ids;
+        }
+        catch (NumberFormatException ignored)
+        {
+        }
+        throw new IllegalArgumentException(dimension + " isn't a valid dimension range.");
+    }
 }

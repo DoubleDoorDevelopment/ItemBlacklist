@@ -3,26 +3,27 @@ package net.doubledoordev.itemblacklist.data;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.*;
+import net.doubledoordev.itemblacklist.Helper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 
 /**
  * @author Dries007
  */
 public class BanList
 {
+    public final Multimap<Item, BanListEntry> banListEntryMap = HashMultimap.create();
     public String dimension;
-    private final Multimap<Item, BanListEntry> banListEntryMap = HashMultimap.create();
 
     public BanList(String dimension)
     {
-        this.dimension = dimension;
+        this.dimension = dimension.replaceAll(" ", "");// normalize
+        if (!GlobalBanList.GLOBAL_NAME.equals(dimension)) getDimIds(); // Sanity check
     }
 
-    public BanList()
+    private BanList()
     {
 
     }
@@ -35,27 +36,7 @@ public class BanList
 
     public int[] getDimIds()
     {
-        try
-        {
-            String[] split = dimension.split(", ?");
-            int[] ids = new int[split.length];
-            for (int i = 0; i < split.length; i++) ids[i] = Integer.parseInt(split[i]);
-            return ids;
-        }
-        catch (NumberFormatException ignored) {}
-        try
-        {
-            String[] split = dimension.split(" ?# ?", 2);
-            int start = Integer.parseInt(split[0]);
-            int end = Integer.parseInt(split[1]);
-            if (end < start) throw new IllegalArgumentException(end + "  < " + start);
-
-            int[] ids = new int[end - start];
-            for (int i = 0; i < ids.length; i++) ids[i] = start + i;
-            return ids;
-        }
-        catch (NumberFormatException ignored) {}
-        throw new IllegalArgumentException(dimension + " isn't a valid dimension range.");
+        return Helper.parseDimIds(dimension);
     }
 
     public static class Json implements JsonSerializer<BanList>, JsonDeserializer<BanList>
@@ -67,6 +48,7 @@ public class BanList
             for (JsonElement element : json.getAsJsonArray())
             {
                 BanListEntry entry = context.deserialize(element, BanListEntry.class);
+                if (banList.banListEntryMap.containsValue(entry)) throw new IllegalArgumentException("Duplicate ban list entry.");
                 banList.banListEntryMap.put(entry.getItem(), entry);
             }
             return banList;

@@ -23,33 +23,6 @@ public class ItemBlacklisted extends Item
         setMaxStackSize(1);
     }
 
-    @Override
-    public String getUnlocalizedName(ItemStack in)
-    {
-        if (!canUnpack(in)) return "_ERROR_";
-        ItemStack unpack = unpack(in);
-        if (unpack == in || unpack == null) return super.getUnlocalizedName();
-
-        return unpack.getUnlocalizedName();
-    }
-
-    @SideOnly(Side.CLIENT)
-    public IIcon getIcon(ItemStack stack, int pass)
-    {
-        if (canUnpack(stack) && pass == 0)
-        {
-            ItemStack unpack = unpack(stack);
-            if (unpack.getItemSpriteNumber() == this.getSpriteNumber()) return unpack.getIconIndex();
-        }
-        return itemIcon;
-    }
-
-    @Override
-    public boolean requiresMultipleRenderPasses()
-    {
-        return true;
-    }
-
     public static ItemStack pack(ItemStack in)
     {
         ItemStack out = new ItemStack(ItemBlacklisted.I);
@@ -72,10 +45,37 @@ public class ItemBlacklisted extends Item
         {
             out = ItemStack.loadItemStackFromNBT(in.getTagCompound().getCompoundTag("item"));
         }
-        catch (Exception ignored)
+        catch (Exception e)
         {
-
+            e.printStackTrace();
         }
         return out == null ? in : out;
+    }
+
+    @Override
+    public String getUnlocalizedName(ItemStack in)
+    {
+        if (!canUnpack(in)) return "_ERROR_";
+        ItemStack unpack = unpack(in);
+        if (unpack == in || unpack == null) return super.getUnlocalizedName();
+
+        return unpack.getUnlocalizedName();
+    }
+
+    @Override
+    public boolean requiresMultipleRenderPasses()
+    {
+        return true;
+    }
+
+    @SideOnly(Side.CLIENT)
+    public IIcon getIcon(ItemStack stack, int pass)
+    {
+        if (canUnpack(stack) && pass == 0)
+        {
+            ItemStack unpack = unpack(stack);
+            if (unpack.getItemSpriteNumber() == this.getSpriteNumber()) return unpack.getIconIndex();
+        }
+        return itemIcon;
     }
 }
