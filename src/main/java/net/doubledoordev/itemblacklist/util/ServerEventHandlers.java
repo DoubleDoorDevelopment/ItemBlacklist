@@ -8,7 +8,6 @@ import net.doubledoordev.itemblacklist.ItemBlacklist;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
@@ -33,7 +32,7 @@ public class ServerEventHandlers
     {
         EntityPlayer player = event.player;
         if (player == null || event.itemInHand == null) return;
-        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile())) return;
+        if (!Helper.shouldCare(event.player)) return;
         if (GlobalBanList.isBanned(player.dimension, player.getHeldItem()))
         {
             player.addChatComponentMessage(new ChatComponentText(ItemBlacklist.message));
@@ -55,7 +54,7 @@ public class ServerEventHandlers
     {
         if (event.entityPlayer.getHeldItem() == null) return;
         EntityPlayer player = event.entityPlayer;
-        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile())) return;
+        if (!Helper.shouldCare(player)) return;
         if (GlobalBanList.isBanned(player.dimension, player.getHeldItem()))
         {
             player.addChatComponentMessage(new ChatComponentText(ItemBlacklist.message));
@@ -68,21 +67,21 @@ public class ServerEventHandlers
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void changeDimension(PlayerEvent.PlayerChangedDimensionEvent event)
     {
-        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(event.player.getGameProfile())) return;
+        if (!Helper.shouldCare(event.player)) return;
         GlobalBanList.process(event.toDim, event.player.inventory);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void itemTossEvent(ItemTossEvent event)
     {
-        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(event.player.getGameProfile())) return;
+        if (!Helper.shouldCare(event.player)) return;
         event.entityItem.setEntityItemStack(GlobalBanList.process(event.player.dimension, event.entityItem.getEntityItem()));
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void entityItemPickupEvent(EntityItemPickupEvent event)
     {
-        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(event.entityPlayer.getGameProfile())) return;
+        if (!Helper.shouldCare(event.entityPlayer)) return;
         event.item.setEntityItemStack(GlobalBanList.process(event.entityPlayer.dimension, event.item.getEntityItem()));
     }
 
@@ -90,7 +89,7 @@ public class ServerEventHandlers
     public void playerOpenContainerEvent(PlayerOpenContainerEvent event)
     {
         EntityPlayer player = event.entityPlayer;
-        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile())) return;
+        if (!Helper.shouldCare(event.entityPlayer)) return;
         if (player.getEntityData().getInteger(Helper.MODID) != player.openContainer.hashCode()) // Crude is inventory changed
         {
             player.getEntityData().setInteger(Helper.MODID, player.openContainer.hashCode());

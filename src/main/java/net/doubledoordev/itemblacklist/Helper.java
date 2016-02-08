@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.doubledoordev.itemblacklist.data.BanList;
 import net.doubledoordev.itemblacklist.data.BanListEntry;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 
 import java.io.File;
@@ -57,5 +58,10 @@ public class Helper
         {
         }
         throw new IllegalArgumentException(dimension + " isn't a valid dimension range.");
+    }
+
+    public static boolean shouldCare(EntityPlayer player)
+    {
+        return MinecraftServer.getServer().isSinglePlayer() || !MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile());
     }
 }
