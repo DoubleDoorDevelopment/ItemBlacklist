@@ -6,7 +6,10 @@ import com.google.gson.*;
 import net.doubledoordev.itemblacklist.Helper;
 import net.doubledoordev.itemblacklist.ItemBlacklist;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import org.apache.commons.io.FileUtils;
 
@@ -14,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -68,6 +72,35 @@ public class GlobalBanList
         if (instance.global.isBanned(item)) return true;
         for (BanList banList : instance.dimesionMap.get(dimensionId)) if (banList.isBanned(item)) return true;
         return false;
+    }
+
+    public static int process(int dim, Container container, EntityPlayer player)
+    {
+        return process(dim, container, player, false);
+    }
+
+    public static int process(int dim, Container container, EntityPlayer player, boolean unpackOnly)
+    {
+        int count = 0;
+        //noinspection unchecked
+        for (Slot slot : (List<Slot>) container.inventorySlots)
+        {
+            if (!slot.canTakeStack(player)) continue;
+            ItemStack oldStack = slot.getStack();
+            ItemStack newStack = process(dim, oldStack, unpackOnly);
+            if (newStack == oldStack) continue;
+            if (slot.isItemValid(oldStack))
+            {
+                slot.putStack(newStack);
+            }
+            else
+            {
+                slot.putStack(null);
+                player.dropPlayerItemWithRandomChoice(newStack, false);
+            }
+            count++;
+        }
+        return count;
     }
 
     public static int process(int dim, IInventory inventory)

@@ -3,6 +3,7 @@ package net.doubledoordev.itemblacklist.util;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
+import net.doubledoordev.itemblacklist.Helper;
 import net.doubledoordev.itemblacklist.ItemBlacklist;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.minecraft.entity.player.EntityPlayer;
@@ -12,6 +13,7 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerOpenContainerEvent;
 import net.minecraftforge.event.world.BlockEvent;
 
 /**
@@ -82,5 +84,17 @@ public class ServerEventHandlers
     {
         if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(event.entityPlayer.getGameProfile())) return;
         event.item.setEntityItemStack(GlobalBanList.process(event.entityPlayer.dimension, event.item.getEntityItem()));
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void playerOpenContainerEvent(PlayerOpenContainerEvent event)
+    {
+        EntityPlayer player = event.entityPlayer;
+        if (MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile())) return;
+        if (player.getEntityData().getInteger(Helper.MODID) != player.openContainer.hashCode()) // Crude is inventory changed
+        {
+            player.getEntityData().setInteger(Helper.MODID, player.openContainer.hashCode());
+            GlobalBanList.process(player.worldObj.provider.dimensionId, player.openContainer, player);
+        }
     }
 }
