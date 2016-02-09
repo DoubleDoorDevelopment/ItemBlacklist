@@ -62,10 +62,11 @@ public class Renderer implements IItemRenderer
     public void renderItem(ItemRenderType type, ItemStack item, Object... data)
     {
         ItemStack unpacked = ItemBlacklisted.unpack(item);
+        if (type == EQUIPPED || type == EQUIPPED_FIRST_PERSON || type == INVENTORY) unpacked.stackSize = 1;
         IItemRenderer renderer = MinecraftForgeClient.getItemRenderer(unpacked, type);
         if (renderer != null)
         {
-            renderItem(type, unpacked, data);
+            renderer.renderItem(type, unpacked, data);
             return;
         }
 

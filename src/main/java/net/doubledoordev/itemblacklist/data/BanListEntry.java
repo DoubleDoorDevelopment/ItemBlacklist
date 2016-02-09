@@ -2,7 +2,6 @@ package net.doubledoordev.itemblacklist.data;
 
 import com.google.gson.*;
 import cpw.mods.fml.common.registry.GameRegistry;
-import net.doubledoordev.itemblacklist.ItemBlacklist;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
 import net.minecraft.item.Item;
 

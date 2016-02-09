@@ -9,6 +9,7 @@ import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -28,19 +29,46 @@ public class ServerEventHandlers
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void blockPlaceEvent(BlockEvent.PlaceEvent event)
+    public void multiPlaceEvent(BlockEvent.MultiPlaceEvent event)
     {
         EntityPlayer player = event.player;
         if (player == null || event.itemInHand == null) return;
         if (!Helper.shouldCare(event.player)) return;
-        if (GlobalBanList.isBanned(player.dimension, player.getHeldItem()))
+        if (GlobalBanList.isBanned(player.dimension, event.itemInHand))
         {
             player.addChatComponentMessage(new ChatComponentText(ItemBlacklist.message));
             if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {};{};{} (Place Block. Banned Item in hand)", player.getCommandSenderName(), player.getHeldItem().getDisplayName(), event.x, event.y, event.z);
             event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
-        else if (GlobalBanList.isBanned(player.dimension, new ItemStack(event.placedBlock, event.blockSnapshot.meta)))
+        else
+        {
+            for (BlockSnapshot blockSnapshot : event.getReplacedBlockSnapshots())
+            {
+                if (!GlobalBanList.isBanned(player.dimension, new ItemStack(blockSnapshot.getCurrentBlock(), 1, blockSnapshot.world.getBlockMetadata(event.x, event.y, event.z)))) continue;
+                player.addChatComponentMessage(new ChatComponentText(ItemBlacklist.message));
+                if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {};{};{} (Place Block. Banned Item placed.)", player.getCommandSenderName(), player.getHeldItem().getDisplayName(), event.x, event.y, event.z);
+                event.setCanceled(true);
+                GlobalBanList.process(player.dimension, player.inventory);
+                break;
+            }
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void blockPlaceEvent(BlockEvent.PlaceEvent event)
+    {
+        EntityPlayer player = event.player;
+        if (player == null || event.itemInHand == null) return;
+        if (!Helper.shouldCare(event.player)) return;
+        if (GlobalBanList.isBanned(player.dimension, event.itemInHand))
+        {
+            player.addChatComponentMessage(new ChatComponentText(ItemBlacklist.message));
+            if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {};{};{} (Place Block. Banned Item in hand)", player.getCommandSenderName(), player.getHeldItem().getDisplayName(), event.x, event.y, event.z);
+            event.setCanceled(true);
+            GlobalBanList.process(player.dimension, player.inventory);
+        }
+        else if (GlobalBanList.isBanned(player.dimension, new ItemStack(event.blockSnapshot.getCurrentBlock(), 1, event.blockSnapshot.world.getBlockMetadata(event.x, event.y, event.z))))
         {
             player.addChatComponentMessage(new ChatComponentText(ItemBlacklist.message));
             if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {};{};{} (Place Block. Banned Item placed.)", player.getCommandSenderName(), player.getHeldItem().getDisplayName(), event.x, event.y, event.z);

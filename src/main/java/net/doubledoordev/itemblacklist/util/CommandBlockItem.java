@@ -18,7 +18,8 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.oredict.OreDictionary;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
 
 import static net.minecraft.util.EnumChatFormatting.*;
 
