@@ -44,6 +44,7 @@ public class Renderer implements IItemRenderer
     {
         if (!ItemBlacklisted.canUnpack(item)) return false;
         ItemStack unpacked = ItemBlacklisted.unpack(item);
+        if (unpacked == item) return false;
         IItemRenderer renderer = MinecraftForgeClient.getItemRenderer(unpacked, type);
         if (renderer != null) return renderer.handleRenderType(unpacked, type);
         return unpacked.getItem().getSpriteNumber() != ItemBlacklisted.I.getSpriteNumber();
@@ -53,6 +54,7 @@ public class Renderer implements IItemRenderer
     public boolean shouldUseRenderHelper(ItemRenderType type, ItemStack item, ItemRendererHelper helper)
     {
         ItemStack unpacked = ItemBlacklisted.unpack(item);
+        if (unpacked == item) return helper != ItemRendererHelper.INVENTORY_BLOCK;
         IItemRenderer renderer = MinecraftForgeClient.getItemRenderer(unpacked, type);
         if (renderer != null) return renderer.shouldUseRenderHelper(type, unpacked, helper);
         return helper != ItemRendererHelper.INVENTORY_BLOCK;
@@ -62,6 +64,7 @@ public class Renderer implements IItemRenderer
     public void renderItem(ItemRenderType type, ItemStack item, Object... data)
     {
         ItemStack unpacked = ItemBlacklisted.unpack(item);
+        if (unpacked == item) return;
         if (type == EQUIPPED || type == EQUIPPED_FIRST_PERSON || type == INVENTORY) unpacked.stackSize = 1;
         IItemRenderer renderer = MinecraftForgeClient.getItemRenderer(unpacked, type);
         if (renderer != null)

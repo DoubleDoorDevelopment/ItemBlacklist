@@ -145,15 +145,15 @@ public class GlobalBanList
         return itemStack;
     }
 
-    public void add(String dimensions, BanListEntry banListEntry)
+    public BanList checkDuplicate(String dimensions)
     {
-        BanList match = null;
         if (dimensions.equals(GLOBAL_NAME))
         {
-            match = global;
+            return global;
         }
         else
         {
+            BanList match = null;
             for (BanList banList : new HashSet<>(GlobalBanList.instance.dimesionMap.values()))
             {
                 if (banList.dimension.equals(dimensions))
@@ -163,6 +163,12 @@ public class GlobalBanList
                 }
             }
         }
+        return null;
+    }
+
+    public void add(String dimensions, BanListEntry banListEntry)
+    {
+        BanList match = checkDuplicate(dimensions);
         if (match == null)
         {
             match = new BanList(dimensions);
@@ -178,22 +184,7 @@ public class GlobalBanList
 
     public boolean remove(String dimensions, BanListEntry banListEntry)
     {
-        BanList match = null;
-        if (dimensions.equals(GLOBAL_NAME))
-        {
-            match = global;
-        }
-        else
-        {
-            for (BanList banList : new HashSet<>(GlobalBanList.instance.dimesionMap.values()))
-            {
-                if (banList.dimension.equals(dimensions))
-                {
-                    if (match != null) throw new IllegalStateException("Duplicate banlist key. This is a serious issue. You should manually try to fix the json file!");
-                    match = banList;
-                }
-            }
-        }
+        BanList match = checkDuplicate(dimensions);
         if (match == null) return false;
         if (!match.banListEntryMap.containsEntry(banListEntry.getItem(), banListEntry)) return false;
         match.banListEntryMap.remove(banListEntry.getItem(), banListEntry);

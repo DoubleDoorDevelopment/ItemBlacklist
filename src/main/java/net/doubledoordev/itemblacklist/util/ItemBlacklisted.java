@@ -57,8 +57,7 @@ public class ItemBlacklisted extends Item
     {
         if (!canUnpack(in)) return "_ERROR_";
         ItemStack unpack = unpack(in);
-        if (unpack == in || unpack == null) return super.getUnlocalizedName();
-
+        if (unpack == in || unpack == null) return "_ERROR_";
         return unpack.getUnlocalizedName();
     }
 
