@@ -27,11 +27,6 @@ public class Helper
     {
     }
 
-    public static File getDataFile()
-    {
-        return new File(MinecraftServer.getServer().worldServers[0].getSaveHandler().getWorldDirectory(), MODID.concat(".json"));
-    }
-
     public static int[] parseDimIds(String dimension)
     {
         try

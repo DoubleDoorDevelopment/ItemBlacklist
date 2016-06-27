@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import static net.doubledoordev.itemblacklist.Helper.MODID;
 import static net.minecraftforge.common.config.Configuration.CATEGORY_GENERAL;
 
+@SuppressWarnings("DefaultAnnotationParam")
 @Mod(modid = MODID, dependencies = "before:*", useMetadata = false)
 public class ItemBlacklist
 {

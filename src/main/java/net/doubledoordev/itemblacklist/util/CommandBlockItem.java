@@ -74,6 +74,10 @@ public class CommandBlockItem extends CommandBase
                 throw new WrongUsageException("Unknown subcommand. Use '/blockitem' to get some help.");
             case "reload":
                 GlobalBanList.init();
+                // No break
+                sender.addChatMessage(new ChatComponentText("Reloaded!").setChatStyle(new ChatStyle().setColor(GREEN)));
+            case "list":
+                list(sender, args);
                 break;
             case "unpack":
                 unpack = true;
@@ -82,14 +86,11 @@ public class CommandBlockItem extends CommandBase
                 int count = GlobalBanList.process(player.dimension, player.inventory, unpack);
                 sender.addChatMessage(new ChatComponentText((unpack ? "Unlocked " : "Locked ") + count + " items."));
                 break;
-            case "list":
-                list(sender, args);
-                break;
             case "ban":
                 try
                 {
                     Pair<String, BanListEntry> toBan = parse(sender, args);
-                    GlobalBanList.instance.add(toBan.k, toBan.v);
+                    GlobalBanList.worldInstance.add(toBan.k, toBan.v);
                     sender.addChatMessage(new ChatComponentText("Banned " + toBan.v.toString() + " in " + toBan.k).setChatStyle(new ChatStyle().setColor(GREEN)));
                 }
                 catch (Exception e)
@@ -103,7 +104,7 @@ public class CommandBlockItem extends CommandBase
                 try
                 {
                     Pair<String, BanListEntry> toBan = parse(sender, args);
-                    if (GlobalBanList.instance.remove(toBan.k, toBan.v)) sender.addChatMessage(new ChatComponentText("Unbanned " + toBan.v.toString() + " in " + toBan.k).setChatStyle(new ChatStyle().setColor(GREEN)));
+                    if (GlobalBanList.worldInstance.remove(toBan.k, toBan.v)) sender.addChatMessage(new ChatComponentText("Unbanned " + toBan.v.toString() + " in " + toBan.k).setChatStyle(new ChatStyle().setColor(GREEN)));
                     else sender.addChatMessage(new ChatComponentText("Can't unban " + toBan.v.toString() + " in " + toBan.k).setChatStyle(new ChatStyle().setColor(RED)));
                 }
                 catch (Exception e)
@@ -168,20 +169,8 @@ public class CommandBlockItem extends CommandBase
         return new Pair<>(dimensions, banListEntry);
     }
 
-    private void list(ICommandSender sender, String[] args)
+    private void list(ICommandSender sender, HashSet<BanList> set)
     {
-        HashSet<BanList> set = new HashSet<>();
-        if (args.length == 1)
-        {
-            set.addAll(GlobalBanList.instance.dimesionMap.values());
-            set.add(GlobalBanList.instance.getGlobal());
-        }
-        else
-        {
-            if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME)) set.add(GlobalBanList.instance.getGlobal());
-            else set.addAll(GlobalBanList.instance.dimesionMap.get(getDimension(sender, args[1])));
-        }
-        if (set.isEmpty()) sender.addChatMessage(new ChatComponentText("No banned items."));
         for (BanList list : set)
         {
             sender.addChatMessage(new ChatComponentText("Dimension " + list.dimension).setChatStyle(new ChatStyle().setColor(AQUA)));
@@ -189,6 +178,47 @@ public class CommandBlockItem extends CommandBase
             {
                 sender.addChatMessage(new ChatComponentText(entry.toString()));
             }
+        }
+    }
+
+    private void list(ICommandSender sender, String[] args)
+    {
+        HashSet<BanList> packSet = new HashSet<>();
+        HashSet<BanList> worldSet = new HashSet<>();
+        if (args.length == 1)
+        {
+            worldSet.addAll(GlobalBanList.worldInstance.dimesionMap.values());
+            worldSet.add(GlobalBanList.worldInstance.getGlobal());
+
+            if (GlobalBanList.packInstance != null)
+            {
+                packSet.addAll(GlobalBanList.packInstance.dimesionMap.values());
+                packSet.add(GlobalBanList.packInstance.getGlobal());
+            }
+        }
+        else
+        {
+            if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME)) worldSet.add(GlobalBanList.worldInstance.getGlobal());
+            else worldSet.addAll(GlobalBanList.worldInstance.dimesionMap.get(getDimension(sender, args[1])));
+
+            if (GlobalBanList.packInstance != null)
+            {
+                if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME)) packSet.add(GlobalBanList.packInstance.getGlobal());
+                else packSet.addAll(GlobalBanList.packInstance.dimesionMap.get(getDimension(sender, args[1])));
+            }
+        }
+        if (worldSet.isEmpty()) sender.addChatMessage(new ChatComponentText("No world banned items.").setChatStyle(new ChatStyle().setColor(YELLOW)));
+        else
+        {
+            sender.addChatMessage(new ChatComponentText("World banned items:").setChatStyle(new ChatStyle().setColor(YELLOW)));
+            list(sender, worldSet);
+        }
+
+        if (packSet.isEmpty()) sender.addChatMessage(new ChatComponentText("No pack banned items. ").setChatStyle(new ChatStyle().setColor(YELLOW)).appendSibling(new ChatComponentText("[unchangeable]").setChatStyle(new ChatStyle().setColor(RED))));
+        else
+        {
+            sender.addChatMessage(new ChatComponentText("Pack banned items: ").setChatStyle(new ChatStyle().setColor(YELLOW)).appendSibling(new ChatComponentText("[unchangeable]").setChatStyle(new ChatStyle().setColor(RED))));
+            list(sender, packSet);
         }
     }
 

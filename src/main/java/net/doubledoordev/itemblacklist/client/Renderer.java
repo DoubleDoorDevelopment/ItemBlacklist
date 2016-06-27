@@ -103,11 +103,13 @@ public class Renderer implements IItemRenderer
                 GL11.glTranslatef(0.6f, 0.3f, 0.6f);
             }
 
-            RenderHelper.enableStandardItemLighting();
             glScalef(scale, scale, scale);
 
             entityItem.setEntityItemStack(unpacked);
+
+            RenderHelper.enableStandardItemLighting();
             rendererItem.doRender(entityItem, 0, 0, 0, 0, 0);
+            RenderHelper.disableStandardItemLighting();
 
             if (type == INVENTORY)
             {
@@ -120,6 +122,7 @@ public class Renderer implements IItemRenderer
                 glEnable(GL_DEPTH_TEST);
                 glPopMatrix();
             }
+
             glPopMatrix();
         }
         catch (Exception e)

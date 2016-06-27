@@ -3,6 +3,7 @@ package net.doubledoordev.itemblacklist.data;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.*;
+import cpw.mods.fml.common.Loader;
 import net.doubledoordev.itemblacklist.Helper;
 import net.doubledoordev.itemblacklist.ItemBlacklist;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
@@ -11,6 +12,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.MinecraftServer;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -20,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static net.doubledoordev.itemblacklist.Helper.MODID;
+
 /**
  * @author Dries007
  */
@@ -27,19 +31,22 @@ public class GlobalBanList
 {
     public static final String GLOBAL_NAME = "__GLOBAL__";
 
-    public static GlobalBanList instance;
+    public static GlobalBanList worldInstance;
+    public static GlobalBanList packInstance;
     public final Multimap<Integer, BanList> dimesionMap = HashMultimap.create();
     private BanList global = new BanList(GLOBAL_NAME);
+    private File file;
 
     public static void init()
     {
-        File file = Helper.getDataFile();
+        File file = new File(MinecraftServer.getServer().worldServers[0].getSaveHandler().getWorldDirectory(), MODID.concat(".json"));
         if (file.exists())
         {
             try
             {
                 String string = FileUtils.readFileToString(file, "UTF-8");
-                instance = Helper.GSON.fromJson(string, GlobalBanList.class);
+                worldInstance = Helper.GSON.fromJson(string, GlobalBanList.class);
+                worldInstance.file = file;
             }
             catch (Exception e)
             {
@@ -48,16 +55,35 @@ public class GlobalBanList
         }
         else
         {
-            instance = new GlobalBanList();
+            worldInstance = new GlobalBanList();
             ItemBlacklist.logger.warn("No config file present.");
+        }
+
+        file = new File(Loader.instance().getConfigDir(), MODID.concat(".json"));
+        if (file.exists())
+        {
+            try
+            {
+                String string = FileUtils.readFileToString(file, "UTF-8");
+                packInstance = Helper.GSON.fromJson(string, GlobalBanList.class);
+                packInstance.file = file;
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("There was an error loading the modpack config file. To prevent damage, the server will be closed.", e);
+            }
+        }
+        else
+        {
+            packInstance = null;
         }
     }
 
-    public static void save()
+    public void save()
     {
         try
         {
-            FileUtils.writeStringToFile(Helper.getDataFile(), Helper.GSON.toJson(instance), "UTF-8");
+            FileUtils.writeStringToFile(this.file, Helper.GSON.toJson(this), "UTF-8");
         }
         catch (IOException e)
         {
@@ -67,10 +93,15 @@ public class GlobalBanList
 
     public static boolean isBanned(int dimensionId, ItemStack item)
     {
-        if (instance == null) throw new IllegalStateException("Ban list not initialized.");
+        if (worldInstance == null) throw new IllegalStateException("Ban list not initialized.");
         if (item == null || item.getItem() == null) return false;
-        if (instance.global.isBanned(item)) return true;
-        for (BanList banList : instance.dimesionMap.get(dimensionId)) if (banList.isBanned(item)) return true;
+        if (packInstance != null)
+        {
+            if (packInstance.global.isBanned(item)) return true;
+            for (BanList banList : packInstance.dimesionMap.get(dimensionId)) if (banList.isBanned(item)) return true;
+        }
+        if (worldInstance.global.isBanned(item)) return true;
+        for (BanList banList : worldInstance.dimesionMap.get(dimensionId)) if (banList.isBanned(item)) return true;
         return false;
     }
 
@@ -154,7 +185,7 @@ public class GlobalBanList
         else
         {
             BanList match = null;
-            for (BanList banList : new HashSet<>(GlobalBanList.instance.dimesionMap.values()))
+            for (BanList banList : new HashSet<>(dimesionMap.values()))
             {
                 if (banList.dimension.equals(dimensions))
                 {
