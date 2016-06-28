@@ -46,7 +46,6 @@ public class GlobalBanList
             {
                 String string = FileUtils.readFileToString(file, "UTF-8");
                 worldInstance = Helper.GSON.fromJson(string, GlobalBanList.class);
-                worldInstance.file = file;
             }
             catch (Exception e)
             {
@@ -58,6 +57,7 @@ public class GlobalBanList
             worldInstance = new GlobalBanList();
             ItemBlacklist.logger.warn("No config file present.");
         }
+        worldInstance.file = file;
 
         file = new File(Loader.instance().getConfigDir(), MODID.concat(".json"));
         if (file.exists())
@@ -83,6 +83,7 @@ public class GlobalBanList
     {
         try
         {
+            if (!this.file.exists()) this.file.createNewFile();
             FileUtils.writeStringToFile(this.file, Helper.GSON.toJson(this), "UTF-8");
         }
         catch (IOException e)
@@ -187,14 +188,14 @@ public class GlobalBanList
             BanList match = null;
             for (BanList banList : new HashSet<>(dimesionMap.values()))
             {
-                if (banList.dimension.equals(dimensions))
+                if (banList.getDimension().equals(dimensions))
                 {
                     if (match != null) throw new IllegalStateException("Duplicate banlist key. This is a serious issue. You should manually try to fix the json file!");
                     match = banList;
                 }
             }
+            return match;
         }
-        return null;
     }
 
     public void add(String dimensions, BanListEntry banListEntry)
@@ -237,15 +238,15 @@ public class GlobalBanList
             JsonObject object = json.getAsJsonObject();
             for (Map.Entry<String, JsonElement> entry : object.entrySet())
             {
-                if (list.global.dimension.equals(entry.getKey()))
+                if (list.global.getDimension().equals(entry.getKey()))
                 {
                     list.global = context.deserialize(entry.getValue(), BanList.class);
-                    list.global.dimension = entry.getKey();
+                    list.global.setDimension(entry.getKey());
                 }
                 else
                 {
                     BanList banList = context.deserialize(entry.getValue(), BanList.class);
-                    banList.dimension = entry.getKey();
+                    banList.setDimension(entry.getKey());
                     for (int i : banList.getDimIds())
                     {
                         list.dimesionMap.put(i, banList);
@@ -259,10 +260,10 @@ public class GlobalBanList
         public JsonElement serialize(GlobalBanList src, Type typeOfSrc, JsonSerializationContext context)
         {
             JsonObject root = new JsonObject();
-            root.add(src.global.dimension, context.serialize(src.global));
+            root.add(src.global.getDimension(), context.serialize(src.global));
             for (BanList banList : src.dimesionMap.values())
             {
-                if (!root.has(banList.dimension)) root.add(banList.dimension, context.serialize(banList));
+                if (!root.has(banList.getDimension())) root.add(banList.getDimension(), context.serialize(banList));
             }
             return root;
         }

@@ -18,6 +18,7 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.oredict.OreDictionary;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -44,6 +45,12 @@ public class CommandBlockItem extends CommandBase
     public String getCommandName()
     {
         return "blockitem";
+    }
+
+    @Override
+    public List getCommandAliases()
+    {
+        return Arrays.asList("itemblacklist", "blacklist");
     }
 
     @Override
@@ -173,7 +180,7 @@ public class CommandBlockItem extends CommandBase
     {
         for (BanList list : set)
         {
-            sender.addChatMessage(new ChatComponentText("Dimension " + list.dimension).setChatStyle(new ChatStyle().setColor(AQUA)));
+            sender.addChatMessage(new ChatComponentText("Dimension " + list.getDimension()).setChatStyle(new ChatStyle().setColor(AQUA)));
             for (BanListEntry entry : list.banListEntryMap.values())
             {
                 sender.addChatMessage(new ChatComponentText(entry.toString()));

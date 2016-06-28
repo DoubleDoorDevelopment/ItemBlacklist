@@ -15,11 +15,11 @@ import java.lang.reflect.Type;
 public class BanList
 {
     public final Multimap<Item, BanListEntry> banListEntryMap = HashMultimap.create();
-    public String dimension;
+    private String dimension;
 
     public BanList(String dimension)
     {
-        this.dimension = dimension.replaceAll(" ", "");// normalize
+        setDimension(dimension);
         if (!GlobalBanList.GLOBAL_NAME.equals(dimension)) getDimIds(); // Sanity check
     }
 
@@ -37,6 +37,16 @@ public class BanList
     public int[] getDimIds()
     {
         return Helper.parseDimIds(dimension);
+    }
+
+    public String getDimension()
+    {
+        return dimension;
+    }
+
+    public void setDimension(String dimension)
+    {
+        this.dimension = dimension.replaceAll(" ", "");
     }
 
     public static class Json implements JsonSerializer<BanList>, JsonDeserializer<BanList>

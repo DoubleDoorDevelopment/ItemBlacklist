@@ -10,6 +10,7 @@ import net.doubledoordev.itemblacklist.client.ClientEventHandlers;
 import net.doubledoordev.itemblacklist.client.Renderer;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.doubledoordev.itemblacklist.util.CommandBlockItem;
+import net.doubledoordev.itemblacklist.util.CommandUnpack;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
 import net.doubledoordev.itemblacklist.util.ServerEventHandlers;
 import net.minecraftforge.client.MinecraftForgeClient;
@@ -29,6 +30,7 @@ public class ItemBlacklist
     public static String message;
     public static Logger logger;
     public static boolean log;
+    private boolean unpack4all;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event)
@@ -48,6 +50,7 @@ public class ItemBlacklist
 
         message = configuration.getString("message", CATEGORY_GENERAL, "Now is not the time to use that. ~Prof. Oak", "The message you get when using an item that is banned.");
         log = configuration.getBoolean("log", CATEGORY_GENERAL, false, "Log every instance of any banned item used. (SPAM WARNING!)");
+        unpack4all = configuration.getBoolean("unpack4all", CATEGORY_GENERAL, true, "Let everyone unpack items by using the 'unpack' command. So items can be used in crafting.");
 
         if (configuration.hasChanged()) configuration.save();
     }
@@ -56,6 +59,7 @@ public class ItemBlacklist
     public void serverStarting(FMLServerStartingEvent event)
     {
         event.registerServerCommand(new CommandBlockItem());
+        if (unpack4all) event.registerServerCommand(new CommandUnpack());
         GlobalBanList.init();
 
         MinecraftForge.EVENT_BUS.register(ServerEventHandlers.I);
