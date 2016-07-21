@@ -48,6 +48,7 @@ minecraft {
 //noinspection GroovyAssignabilityCheck
 processResources {
     from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
         expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.archivesBaseName, 'githuborg':githuborg, 'description':description, 'group':project.group, 'artifactId':project.archivesBaseName
     }
 
