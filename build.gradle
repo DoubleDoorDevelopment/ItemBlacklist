@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
         maven {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
@@ -10,64 +10,161 @@ buildscript {
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
+    //noinspection GroovyAssignabilityCheck
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath group: 'com.github.rodionmoiseev.gradle.plugins', name: 'idea-utils', version: '0.2'
     }
 }
 
-apply plugin: 'forge'
+import groovy.json.*
 
-version = "1.2.0"
-if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
+//noinspection GroovyAssignabilityCheck
+configurations {
+    compile
+    deployJars
+}
+
+apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "idea-utils"
+apply plugin: "maven"
 
 targetCompatibility = 1.7
 sourceCompatibility = 1.7
 
 group= "net.doubledoordev.itemblacklist"
 archivesBaseName = "ItemBlacklist"
+def githuborg = 'DoubleDoorDevelopment'
+def description = 'ItemBlacklist per dimension.'
+version = "1.2.0"
+if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
 
 minecraft {
-    version = "1.7.10-10.13.4.1558-1.7.10"
+    version = "1.9.4-12.17.0.1976"
     runDir = "jars"
+    mappings = "stable_26"
 }
 
-processResources
-{
-    // replace stuff in mcmod.info, nothing else
+//noinspection GroovyAssignabilityCheck
+processResources {
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.archivesBaseName, 'githuborg':githuborg, 'description':description, 'group':project.group, 'artifactId':project.archivesBaseName
     }
-        
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+
+    doLast {
+        def updateFile = new File(project.archivesBaseName + '.json')
+        def json;
+        if (updateFile.exists()) {
+            json = new JsonSlurper().parseText(updateFile.getText())
+        }
+        else {
+            def builder = new JsonBuilder()
+            json = builder(
+                    homepage: "http://doubledoordev.net/",
+                    promos: new HashMap<>()
+            )
+        }
+        def outStream = new ByteArrayOutputStream()
+        def result = exec {
+            executable = 'git'
+            args = [ 'log', '-n', '1', "--format='%B'"]
+            standardOutput = outStream
+        }
+        def fullLog = outStream.toString().replaceAll("^\\s*'\\s*|\\s*'\\s*\$", "").replaceAll("[\\r\\n]+", "\n")
+
+        json['promos'][project.minecraft.version + '-latest'] = project.version
+        json['promos'][project.minecraft.version + '-recomended'] = project.version
+        if (!json.containsKey(project.minecraft.version)) json.put(project.minecraft.version, new HashMap<>())
+        def version = json[project.minecraft.version]
+        version.put(project.version, fullLog)
+        updateFile.write JsonOutput.prettyPrint(JsonOutput.toJson(json))
     }
 }
 
-task sourcesJar(type: Jar) {
-    from "LICENSE.txt"
-    from sourceSets.main.allSource
-    classifier = 'src'
-    appendix = project.minecraft.version
-}
 
-task deobfJar(type: Jar) {
-    from "LICENSE.txt"
+task deobfJar(type: Jar, dependsOn: 'jar') {
     from sourceSets.main.output
-	classifier = 'dev'
+    from "LICENSE.txt"
+    classifier "dev"
     appendix = project.minecraft.version
 }
-
+sourceJar {
+    from "LICENSE.txt"
+    exclude("com/**")
+    classifier "src"
+    appendix = project.minecraft.version
+}
+//noinspection GroovyAssignabilityCheck
 jar {
     from "LICENSE.txt"
-	exclude("com/**")
+    exclude("com/**")
     appendix = project.minecraft.version
 }
-
 artifacts {
-    archives sourcesJar
     archives deobfJar
+}
+
+idea {
+    project {
+        copyright {
+            name = 'New BSD License'
+            license = file('LICENSE.txt')
+        }
+    }
+}
+
+//noinspection GroovyAssignabilityCheck
+uploadArchives {
+    if (project.hasProperty("dddUser") && project.hasProperty("dddUrl") && project.hasProperty("dddPass")) {
+        repositories {
+            mavenDeployer {
+                repository(url: dddUrl) {
+                    authentication(userName: dddUser, password: dddPass)
+                }
+                pom {
+                    groupId = project.group
+                    version = project.minecraft.version + "-" + project.version
+                    artifactId = project.archivesBaseName
+                    project {
+                        name project.archivesBaseName
+                        packaging 'jar'
+                        description = project.description
+                        url 'https://github.com/' + githuborg + '/' + project.archivesBaseName
+
+                        scm {
+                            url 'https://github.com/' + githuborg + '/' + project.archivesBaseName
+                            connection 'scm:git:git://github.com/' + githuborg + '/' + project.archivesBaseName + '.git'
+                            developerConnection 'scm:git:git@github.com:' + githuborg + '/' + project.archivesBaseName + '.git'
+                        }
+
+                        issueManagement {
+                            system 'github'
+                            url 'https://github.com/' + githuborg + '/' + project.archivesBaseName + '/issues'
+                        }
+
+                        licenses  {
+                            license  {
+                                name 'New BSD License'
+                                url 'https://raw.github.com/' + githuborg + '/' + project.archivesBaseName + '/master/LICENCE.txt'
+                                distribution 'repo'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id 'Dries007'
+                                name 'Dries007'
+                                roles { role 'developer' }
+                            }
+                            developer {
+                                id 'Claycorp'
+                                name 'Claycorp'
+                                roles { role 'developer' }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

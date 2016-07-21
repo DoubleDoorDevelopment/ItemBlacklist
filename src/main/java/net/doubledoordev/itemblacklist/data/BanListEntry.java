@@ -1,9 +1,9 @@
 package net.doubledoordev.itemblacklist.data;
 
 import com.google.gson.*;
-import cpw.mods.fml.common.registry.GameRegistry;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 
 import java.lang.reflect.Type;
 
@@ -17,9 +17,9 @@ public class BanListEntry
     private Item item;
     private int damage = 0;
 
-    public BanListEntry(GameRegistry.UniqueIdentifier uid, int damage)
+    public BanListEntry(ResourceLocation uid, int damage)
     {
-        this.item = GameRegistry.findItem(uid.modId, uid.name);
+        this.item = Item.REGISTRY.getObject(uid);
         if (this.item == ItemBlacklisted.I) throw new IllegalArgumentException("You can't ban the banning item.");
         this.damage = damage;
         if (item == null) throw new IllegalArgumentException(uid.toString() + " isn't a valid item.");
@@ -27,7 +27,7 @@ public class BanListEntry
 
     public BanListEntry(String name, int damage)
     {
-        this(new GameRegistry.UniqueIdentifier(name), damage);
+        this(new ResourceLocation(name), damage);
     }
 
     public boolean isBanned(int damage)
@@ -62,7 +62,7 @@ public class BanListEntry
     @Override
     public String toString()
     {
-        return GameRegistry.findUniqueIdentifierFor(item).toString() + ' ' + (damage == WILDCARD_VALUE ? "*" : String.valueOf(damage));
+        return item.getRegistryName().toString() + ' ' + (damage == WILDCARD_VALUE ? "*" : String.valueOf(damage));
     }
 
     public static class Json implements JsonSerializer<BanListEntry>, JsonDeserializer<BanListEntry>
@@ -84,7 +84,7 @@ public class BanListEntry
         public JsonElement serialize(BanListEntry src, Type typeOfSrc, JsonSerializationContext context)
         {
             JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("item", GameRegistry.findUniqueIdentifierFor(src.item).toString());
+            jsonObject.addProperty("item", src.item.getRegistryName().toString());
             if (src.damage == WILDCARD_VALUE) jsonObject.addProperty("damage", "*");
             else jsonObject.addProperty("damage", src.damage);
             return jsonObject;

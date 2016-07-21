@@ -6,10 +6,8 @@ import net.doubledoordev.itemblacklist.data.BanList;
 import net.doubledoordev.itemblacklist.data.BanListEntry;
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.util.FakePlayer;
-
-import java.io.File;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 /**
  * @author Dries007
@@ -58,6 +56,6 @@ public class Helper
 
     public static boolean shouldCare(EntityPlayer player)
     {
-        return MinecraftServer.getServer().isSinglePlayer() || player instanceof FakePlayer || player.getGameProfile().getId() == null|| !MinecraftServer.getServer().getConfigurationManager().func_152596_g(player.getGameProfile());
+        return player instanceof FakePlayer || player.getGameProfile().getId() == null || FMLCommonHandler.instance().getMinecraftServerInstance().isSinglePlayer() || FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getOppedPlayers().getPermissionLevel(player.getGameProfile()) == 0;
     }
 }

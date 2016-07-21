@@ -2,11 +2,11 @@ package net.doubledoordev.itemblacklist.util;
 
 import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-
-import java.util.List;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * @author Dries007
@@ -26,9 +26,9 @@ public class CommandUnpack extends CommandBase
     }
 
     @Override
-    public boolean canCommandSenderUseCommand(ICommandSender p_71519_1_)
+    public boolean checkPermission(MinecraftServer server, ICommandSender sender)
     {
-        return p_71519_1_ instanceof EntityPlayer;
+        return sender instanceof EntityPlayer;
     }
 
     @Override
@@ -38,22 +38,10 @@ public class CommandUnpack extends CommandBase
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args)
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         EntityPlayer player = getCommandSenderAsPlayer(sender);
         int count = GlobalBanList.process(player.dimension, player.inventory, true);
-        sender.addChatMessage(new ChatComponentText("Unlocked " + count + " items."));
-    }
-
-    @Override
-    public List addTabCompletionOptions(ICommandSender sender, String[] args)
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isUsernameIndex(String[] args, int arg)
-    {
-        return false;
+        sender.addChatMessage(new TextComponentString("Unlocked " + count + " items."));
     }
 }
