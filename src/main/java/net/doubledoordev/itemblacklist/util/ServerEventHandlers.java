@@ -41,7 +41,7 @@ public class ServerEventHandlers
         if (GlobalBanList.isBanned(player.dimension, itemInHand))
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
-            if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
             event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
@@ -56,7 +56,7 @@ public class ServerEventHandlers
                 ItemStack stack = new ItemStack(item, 1, block.damageDropped(blockState));
                 if (!GlobalBanList.isBanned(player.dimension, stack)) continue;
                 player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
-                if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+                if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
                 event.setCanceled(true);
                 GlobalBanList.process(player.dimension, player.inventory);
                 break;
@@ -78,14 +78,14 @@ public class ServerEventHandlers
         if (GlobalBanList.isBanned(player.dimension, itemInHand))
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
-            if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
             event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
         else if (GlobalBanList.isBanned(player.dimension, stack))
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
-            if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
             event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
@@ -100,7 +100,7 @@ public class ServerEventHandlers
         if (GlobalBanList.isBanned(player.dimension, stack))
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
-            if (ItemBlacklist.log) ItemBlacklist.logger.info("{} tried to use {} at {} ({})", player.getName(), stack.getDisplayName(), event.getPos(), event.getFace());
+            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} ({})", player.getName(), stack.getDisplayName(), event.getPos(), event.getFace());
             event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }

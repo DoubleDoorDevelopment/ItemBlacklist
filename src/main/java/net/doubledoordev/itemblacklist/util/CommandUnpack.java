@@ -13,6 +13,10 @@ import net.minecraft.util.text.TextComponentString;
  */
 public class CommandUnpack extends CommandBase
 {
+    public static final CommandUnpack I = new CommandUnpack();
+
+    private CommandUnpack() {}
+
     @Override
     public String getCommandName()
     {

@@ -29,6 +29,8 @@ import static net.minecraft.util.text.TextFormatting.*;
  */
 public class CommandBlockItem extends CommandBase
 {
+    public static final CommandBlockItem I = new CommandBlockItem();
+
     public static class Pair<K, V>
     {
         public K k;
@@ -40,6 +42,8 @@ public class CommandBlockItem extends CommandBase
             this.v = v;
         }
     }
+
+    private CommandBlockItem() {}
 
     @Override
     public String getCommandName()

@@ -15,6 +15,12 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 public class Helper
 {
     public static final String MODID = "ItemBlacklist";
+    public static final String UPDATE_URL = "http://doubledoordev.net/" + MODID + ".json";
+    /**
+     * @see net.doubledoordev.itemblacklist.client.ModConfigGuiFactory
+     */
+    public static final String MOD_GUI_FACTORY = "net.doubledoordev.itemblacklist.client.ModConfigGuiFactory";
+
     public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping()
             .registerTypeHierarchyAdapter(BanList.class, new BanList.Json())
             .registerTypeHierarchyAdapter(BanListEntry.class, new BanListEntry.Json())
