@@ -128,16 +128,16 @@ public class ServerEventHandlers
         if (!Helper.shouldCare(player)) return;
         event.getItem().setEntityItemStack(GlobalBanList.process(player.dimension, event.getItem().getEntityItem()));
     }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void playerOpenContainerEvent(PlayerOpenContainerEvent event)
-    {
-        EntityPlayer player = event.getEntityPlayer();
-        if (!Helper.shouldCare(player)) return;
-        if (player.getEntityData().getInteger(Helper.MODID) != player.openContainer.hashCode()) // Crude is inventory changed
-        {
-            player.getEntityData().setInteger(Helper.MODID, player.openContainer.hashCode());
-            GlobalBanList.process(player.dimension, player.openContainer, player);
-        }
-    }
+//
+//    @SubscribeEvent(priority = EventPriority.HIGHEST)
+//    public void playerOpenContainerEvent(PlayerOpenContainerEvent event)
+//    {
+//        EntityPlayer player = event.getEntityPlayer();
+//        if (!Helper.shouldCare(player)) return;
+//        if (player.getEntityData().getInteger(Helper.MODID) != player.openContainer.hashCode()) // Crude is inventory changed
+//        {
+//            player.getEntityData().setInteger(Helper.MODID, player.openContainer.hashCode());
+//            GlobalBanList.process(player.dimension, player.openContainer, player);
+//        }
+//    }
 }
