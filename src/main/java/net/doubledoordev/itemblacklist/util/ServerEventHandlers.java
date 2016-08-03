@@ -42,7 +42,8 @@ public class ServerEventHandlers
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
             if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
-            event.setCanceled(true);
+            if (event.isCancelable())
+                event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
         else
@@ -57,7 +58,8 @@ public class ServerEventHandlers
                 if (!GlobalBanList.isBanned(player.dimension, stack)) continue;
                 player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
                 if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
-                event.setCanceled(true);
+                if (event.isCancelable())
+                    event.setCanceled(true);
                 GlobalBanList.process(player.dimension, player.inventory);
                 break;
             }
@@ -79,14 +81,16 @@ public class ServerEventHandlers
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
             if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
-            event.setCanceled(true);
+            if (event.isCancelable())
+                event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
         else if (GlobalBanList.isBanned(player.dimension, stack))
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
             if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
-            event.setCanceled(true);
+            if (event.isCancelable())
+                event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
     }
@@ -101,7 +105,8 @@ public class ServerEventHandlers
         {
             player.addChatComponentMessage(new TextComponentString(ItemBlacklist.message));
             if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} ({})", player.getName(), stack.getDisplayName(), event.getPos(), event.getFace());
-            event.setCanceled(true);
+            if (event.isCancelable())
+                event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
         }
     }
@@ -128,7 +133,7 @@ public class ServerEventHandlers
         if (!Helper.shouldCare(player)) return;
         event.getItem().setEntityItemStack(GlobalBanList.process(player.dimension, event.getItem().getEntityItem()));
     }
-//
+//      TODO: Find a fix for this that works
 //    @SubscribeEvent(priority = EventPriority.HIGHEST)
 //    public void playerOpenContainerEvent(PlayerOpenContainerEvent event)
 //    {
