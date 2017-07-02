@@ -18,7 +18,7 @@ public class CommandUnpack extends CommandBase
     private CommandUnpack() {}
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "unpack";
     }
@@ -36,7 +36,7 @@ public class CommandUnpack extends CommandBase
     }
 
     @Override
-    public String getCommandUsage(ICommandSender p_71518_1_)
+    public String getUsage(ICommandSender sender)
     {
         return "Use '/unpack' to remove the lock from any banned items in your inventory.";
     }
@@ -46,6 +46,6 @@ public class CommandUnpack extends CommandBase
     {
         EntityPlayer player = getCommandSenderAsPlayer(sender);
         int count = GlobalBanList.process(player.dimension, player.inventory, true);
-        sender.addChatMessage(new TextComponentString("Unlocked " + count + " items."));
+        sender.sendMessage(new TextComponentString("Unlocked " + count + " items."));
     }
 }

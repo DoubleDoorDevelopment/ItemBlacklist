@@ -46,19 +46,19 @@ public class CommandBlockItem extends CommandBase
     private CommandBlockItem() {}
 
     @Override
-    public String getCommandName()
+    public String getName()
     {
         return "blockitem";
     }
 
     @Override
-    public List<String> getCommandAliases()
+    public List<String> getAliases()
     {
         return Arrays.asList("itemblacklist", "blacklist");
     }
 
     @Override
-    public String getCommandUsage(ICommandSender p_71518_1_)
+    public String getUsage(ICommandSender p_71518_1_)
     {
         return "Use '/blockitem help' for more info.";
     }
@@ -68,13 +68,13 @@ public class CommandBlockItem extends CommandBase
     {
         if (args.length == 0)
         {
-            sender.addChatMessage(new TextComponentString("Possible subcommands:").setStyle(new Style().setColor(GOLD)));
-            sender.addChatMessage(makeHelpText("reload", "Reloads the config file from disk."));
-            sender.addChatMessage(makeHelpText("pack [player]", "Lock banned items in targets inventory."));
-            sender.addChatMessage(makeHelpText("unpack [player]", "Unlock banned items in targets inventory."));
-            sender.addChatMessage(makeHelpText("list [dim|player]", "List banned items of all, player, or dim"));
-            sender.addChatMessage(makeHelpText("ban [dim list] [item[:*|meta]]", "Ban an item."));
-            sender.addChatMessage(makeHelpText("unban [dim list] [item[:*|meta]]", "Unban an item."));
+            sender.sendMessage(new TextComponentString("Possible subcommands:").setStyle(new Style().setColor(GOLD)));
+            sender.sendMessage(makeHelpText("reload", "Reloads the config file from disk."));
+            sender.sendMessage(makeHelpText("pack [player]", "Lock banned items in targets inventory."));
+            sender.sendMessage(makeHelpText("unpack [player]", "Unlock banned items in targets inventory."));
+            sender.sendMessage(makeHelpText("list [dim|player]", "List banned items of all, player, or dim"));
+            sender.sendMessage(makeHelpText("ban [dim list] [item[:*|meta]]", "Ban an item."));
+            sender.sendMessage(makeHelpText("unban [dim list] [item[:*|meta]]", "Unban an item."));
             return;
         }
         String arg0 = args[0].toLowerCase();
@@ -86,7 +86,7 @@ public class CommandBlockItem extends CommandBase
             case "reload":
                 GlobalBanList.init(server);
                 // No break
-                sender.addChatMessage(new TextComponentString("Reloaded!").setStyle(new Style().setColor(GREEN)));
+                sender.sendMessage(new TextComponentString("Reloaded!").setStyle(new Style().setColor(GREEN)));
             case "list":
                 list(server, sender, args);
                 break;
@@ -95,14 +95,14 @@ public class CommandBlockItem extends CommandBase
             case "pack":
                 EntityPlayer player = args.length > 1 ? getPlayer(server, sender, args[1]) : getCommandSenderAsPlayer(sender);
                 int count = GlobalBanList.process(player.dimension, player.inventory, unpack);
-                sender.addChatMessage(new TextComponentString((unpack ? "Unlocked " : "Locked ") + count + " items."));
+                sender.sendMessage(new TextComponentString((unpack ? "Unlocked " : "Locked ") + count + " items."));
                 break;
             case "ban":
                 try
                 {
                     Pair<String, BanListEntry> toBan = parse(sender, args);
                     GlobalBanList.worldInstance.add(toBan.k, toBan.v);
-                    sender.addChatMessage(new TextComponentString("Banned " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(GREEN)));
+                    sender.sendMessage(new TextComponentString("Banned " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(GREEN)));
                 }
                 catch (Exception e)
                 {
@@ -114,8 +114,8 @@ public class CommandBlockItem extends CommandBase
                 try
                 {
                     Pair<String, BanListEntry> toBan = parse(sender, args);
-                    if (GlobalBanList.worldInstance.remove(toBan.k, toBan.v)) sender.addChatMessage(new TextComponentString("Unbanned " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(GREEN)));
-                    else sender.addChatMessage(new TextComponentString("Can't unban " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(RED)));
+                    if (GlobalBanList.worldInstance.remove(toBan.k, toBan.v)) sender.sendMessage(new TextComponentString("Unbanned " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(GREEN)));
+                    else sender.sendMessage(new TextComponentString("Can't unban " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(RED)));
                 }
                 catch (Exception e)
                 {
@@ -171,7 +171,7 @@ public class CommandBlockItem extends CommandBase
         {
             EntityPlayer player = getCommandSenderAsPlayer(sender);
             ItemStack stack = player.getHeldItem(EnumHand.MAIN_HAND);
-            if (stack == null) throw new WrongUsageException("No item specified and no item held.");
+            if (stack.isEmpty()) throw new WrongUsageException("No item specified and no item held.");
             if (wildcardOverride) meta = OreDictionary.WILDCARD_VALUE;
             banListEntry = new BanListEntry(stack.getItem().getRegistryName(), meta);
         }
@@ -182,10 +182,10 @@ public class CommandBlockItem extends CommandBase
     {
         for (BanList list : set)
         {
-            sender.addChatMessage(new TextComponentString("Dimension " + list.getDimension()).setStyle(new Style().setColor(AQUA)));
+            sender.sendMessage(new TextComponentString("Dimension " + list.getDimension()).setStyle(new Style().setColor(AQUA)));
             for (BanListEntry entry : list.banListEntryMap.values())
             {
-                sender.addChatMessage(new TextComponentString(entry.toString()));
+                sender.sendMessage(new TextComponentString(entry.toString()));
             }
         }
     }
@@ -216,17 +216,17 @@ public class CommandBlockItem extends CommandBase
                 else packSet.addAll(GlobalBanList.packInstance.dimesionMap.get(getDimension(server, sender, args[1])));
             }
         }
-        if (worldSet.isEmpty()) sender.addChatMessage(new TextComponentString("No world banned items.").setStyle(new Style().setColor(YELLOW)));
+        if (worldSet.isEmpty()) sender.sendMessage(new TextComponentString("No world banned items.").setStyle(new Style().setColor(YELLOW)));
         else
         {
-            sender.addChatMessage(new TextComponentString("World banned items:").setStyle(new Style().setColor(YELLOW)));
+            sender.sendMessage(new TextComponentString("World banned items:").setStyle(new Style().setColor(YELLOW)));
             list(sender, worldSet);
         }
 
-        if (packSet.isEmpty()) sender.addChatMessage(new TextComponentString("No pack banned items. ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
+        if (packSet.isEmpty()) sender.sendMessage(new TextComponentString("No pack banned items. ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
         else
         {
-            sender.addChatMessage(new TextComponentString("Pack banned items: ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
+            sender.sendMessage(new TextComponentString("Pack banned items: ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
             list(sender, packSet);
         }
     }
@@ -248,6 +248,8 @@ public class CommandBlockItem extends CommandBase
         catch (EntityNotFoundException ignored)
         {
 
+        } catch (CommandException e) {
+            e.printStackTrace();
         }
         throw new WrongUsageException("%s is not an entity or a number", arg);
     }
@@ -258,9 +260,9 @@ public class CommandBlockItem extends CommandBase
     }
 
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
-        if (isUsernameIndex(args, args.length)) return getListOfStringsMatchingLastWord(args, server.getAllUsernames());
+        if (isUsernameIndex(args, args.length)) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
         if (args.length == 1) return getListOfStringsMatchingLastWord(args, "reload", "pack", "unpack", "list", "ban", "unban");
         if (args[0].equalsIgnoreCase("ban") || args[0].equalsIgnoreCase("unban"))
         {
@@ -270,7 +272,7 @@ public class CommandBlockItem extends CommandBase
                 set.add(rl.toString());
             return getListOfStringsMatchingLastWord(args, set);
         }
-        return super.getTabCompletionOptions(server, sender, args, pos);
+        return super.getTabCompletions(server, sender, args, pos);
     }
 
     @Override
