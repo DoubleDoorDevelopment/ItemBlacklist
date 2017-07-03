@@ -33,7 +33,7 @@ targetCompatibility = 1.7
 sourceCompatibility = 1.7
 
 group= "net.doubledoordev.itemblacklist"
-archivesBaseName = "itemblacklist"
+archivesBaseName = "ItemBlacklist"
 def githuborg = 'DoubleDoorDevelopment'
 def description = 'ItemBlacklist per dimension.'
 version = "1.3.0"
