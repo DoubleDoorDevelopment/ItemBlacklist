@@ -39,7 +39,7 @@ public class GlobalBanList
 
     public static void init(MinecraftServer server)
     {
-        File file = new File(server.worldServers[0].getSaveHandler().getWorldDirectory(), MODID.concat(".json"));
+        File file = new File(server.worlds[0].getSaveHandler().getWorldDirectory(), MODID.concat(".json"));
         if (file.exists())
         {
             try
@@ -127,7 +127,7 @@ public class GlobalBanList
             else
             {
                 slot.putStack(null);
-                if (!player.inventory.addItemStackToInventory(newStack) || newStack.stackSize > 0)
+                if (!player.inventory.addItemStackToInventory(newStack) || newStack.getCount() > 0)
                 {
                     EntityItem entityitem = player.dropItem(newStack, false);
                     if (entityitem != null)
@@ -154,7 +154,7 @@ public class GlobalBanList
         for (int i = 0; i < size; i++)
         {
             ItemStack itemStack = inventory.getStackInSlot(i);
-            if (itemStack == null) continue;
+            if (itemStack.isEmpty()) continue;
             ItemStack processed = process(dim, itemStack, unpackOnly);
             if (processed != itemStack)
             {

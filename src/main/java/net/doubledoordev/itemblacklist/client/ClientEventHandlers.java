@@ -51,13 +51,13 @@ public class ClientEventHandlers
             {
                 if (slot == null) continue;
                 ItemStack stack = slot.getStack();
-                if (stack == null || stack.getItem() != ItemBlacklisted.I) continue;
+                if (stack.isEmpty() || stack.getItem() != ItemBlacklisted.I) continue;
                 if (!ItemBlacklisted.canUnpack(stack)) return;
                 ItemStack unpacked = ItemBlacklisted.unpack(stack);
 
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(guiLeft, guiTop, 1);
-                GlStateManager.translate(slot.xDisplayPosition+8, slot.yDisplayPosition+8, 1);
+                GlStateManager.translate(slot.xPos+8, slot.yPos+8, 1);
                 GlStateManager.scale(15F, -15F, 10F);
                 Minecraft.getMinecraft().getRenderItem().renderItem(unpacked, ItemCameraTransforms.TransformType.FIXED);
                 GlStateManager.popMatrix();
@@ -78,7 +78,7 @@ public class ClientEventHandlers
     public void renderItemInFrameEvent(final RenderItemInFrameEvent event)
     {
         ItemStack stack = event.getItem();
-        if (stack == null || stack.getItem() != ItemBlacklisted.I) return;
+        if (stack.isEmpty() || stack.getItem() != ItemBlacklisted.I) return;
         if (!ItemBlacklisted.canUnpack(stack)) return;
         ItemStack unpacked = ItemBlacklisted.unpack(stack);
 
@@ -101,12 +101,12 @@ public class ClientEventHandlers
             final Minecraft mc = Minecraft.getMinecraft();
             final ScaledResolution res = event.getResolution();
 
-            if (!mc.thePlayer.isSpectator())
+            if (!mc.player.isSpectator())
             {
                 for (int slot = 0; slot < 9; ++slot)
                 {
-                    final ItemStack stack = mc.thePlayer.inventory.mainInventory[slot];
-                    if (stack != null && stack.getItem() == ItemBlacklisted.I)
+                    final ItemStack stack = mc.player.inventory.mainInventory.get(slot);
+                    if (!stack.isEmpty() && stack.getItem() == ItemBlacklisted.I)
                     {
                         final int x = res.getScaledWidth() / 2 - 90 + slot * 20 + 2;
                         final int y = res.getScaledHeight() - 16 - 3;

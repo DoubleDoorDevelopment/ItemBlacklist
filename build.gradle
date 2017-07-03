@@ -36,13 +36,13 @@ group= "net.doubledoordev.itemblacklist"
 archivesBaseName = "ItemBlacklist"
 def githuborg = 'DoubleDoorDevelopment'
 def description = 'ItemBlacklist per dimension.'
-version = "1.2.0"
+version = "1.3.0"
 if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
 
 minecraft {
-    version = "1.9.4-12.17.0.1976"
+    version = "1.11.2-13.20.1.2388"
     runDir = "jars"
-    mappings = "stable_26"
+    mappings = "stable_32"
 }
 
 //noinspection GroovyAssignabilityCheck

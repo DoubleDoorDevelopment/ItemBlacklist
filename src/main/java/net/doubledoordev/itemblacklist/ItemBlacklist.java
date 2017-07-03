@@ -80,8 +80,8 @@ public class ItemBlacklist
             if (unpack4all) ch.registerCommand(CommandUnpack.I);
             else
             {
-                ch.getCommands().remove(CommandUnpack.I.getCommandName());
-                for (String s : CommandUnpack.I.getCommandAliases()) ch.getCommands().remove(s);
+                ch.getCommands().remove(CommandUnpack.I.getName());
+                for (String s : CommandUnpack.I.getAliases()) ch.getCommands().remove(s);
             }
         }
     }
