@@ -1,10 +1,12 @@
 package net.doubledoordev.itemblacklist.util;
 
-import net.doubledoordev.itemblacklist.Helper;
-import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.client.model.ModelLoader;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * @author Dries007
@@ -16,8 +18,8 @@ public class ItemBlacklisted extends Item
 
     private ItemBlacklisted()
     {
-        setUnlocalizedName(NAME);
-        setRegistryName(Helper.MODID.toLowerCase(), NAME);
+        setTranslationKey("blacklisted");
+        setRegistryName("itemblacklist", NAME);
         setMaxStackSize(1);
     }
 
@@ -51,11 +53,17 @@ public class ItemBlacklisted extends Item
     }
 
     @Override
-    public String getUnlocalizedName(ItemStack in)
+    public String getTranslationKey(ItemStack in)
     {
         if (!canUnpack(in)) return "_ERROR_";
         ItemStack unpack = unpack(in);
         if (unpack == in || unpack == null) return "_ERROR_";
-        return unpack.getUnlocalizedName();
+        return unpack.getTranslationKey();
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void initModel()
+    {
+        ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation("itemblacklist:blacklisted", "inventory"));
     }
 }

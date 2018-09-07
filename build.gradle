@@ -3,169 +3,55 @@ buildscript {
         jcenter()
         maven {
             name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-        maven {
-            name = "sonatype"
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = "https://files.minecraftforge.net/maven"
         }
     }
-    //noinspection GroovyAssignabilityCheck
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
-        classpath group: 'com.github.rodionmoiseev.gradle.plugins', name: 'idea-utils', version: '0.2'
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
     }
-}
-
-import groovy.json.*
-
-//noinspection GroovyAssignabilityCheck
-configurations {
-    compile
-    deployJars
 }
 
 apply plugin: "net.minecraftforge.gradle.forge"
-apply plugin: "idea-utils"
-apply plugin: "maven"
 
-targetCompatibility = 1.7
-sourceCompatibility = 1.7
-
-group= "net.doubledoordev.itemblacklist"
-archivesBaseName = "ItemBlacklist"
-def githuborg = 'DoubleDoorDevelopment'
-def description = 'ItemBlacklist per dimension.'
-version = "1.3.0"
-if (System.getenv().BUILD_NUMBER != null) version += "." + System.getenv().BUILD_NUMBER
+version = modVersion
+group = modGroup
+archivesBaseName = modBaseName
 
 minecraft {
-    version = "1.11.2-13.20.1.2388"
-    runDir = "jars"
-    mappings = "stable_32"
+    version = project.forgeVersion
+    runDir = "run"
+
+    // the mappings can be changed at any time, and must be in the following format.
+    // snapshot_YYYYMMDD   snapshot are built nightly.
+    // stable_#            stables are built at the discretion of the MCP team.
+    // Use non-default mappings at your own risk. they may not always work.
+    // simply re-run your setup task after changing the mappings to update your workspace.
+    mappings = project.mcpVersion
+    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
-//noinspection GroovyAssignabilityCheck
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
 processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.archivesBaseName, 'githuborg':githuborg, 'description':description, 'group':project.group, 'artifactId':project.archivesBaseName
+        include "mcmod.info"
+
+        // replace version and mcversion
+        expand "version": project.version, "mcversion": project.minecraft.version
     }
 
-    doLast {
-        def updateFile = new File(project.archivesBaseName + '.json')
-        def json;
-        if (updateFile.exists()) {
-            json = new JsonSlurper().parseText(updateFile.getText())
-        }
-        else {
-            def builder = new JsonBuilder()
-            json = builder(
-                    homepage: "http://doubledoordev.net/",
-                    promos: new HashMap<>()
-            )
-        }
-        def outStream = new ByteArrayOutputStream()
-        def result = exec {
-            executable = 'git'
-            args = [ 'log', '-n', '1', "--format='%B'"]
-            standardOutput = outStream
-        }
-        def fullLog = outStream.toString().replaceAll("^\\s*'\\s*|\\s*'\\s*\$", "").replaceAll("[\\r\\n]+", "\n")
-
-        json['promos'][project.minecraft.version + '-latest'] = project.version
-        json['promos'][project.minecraft.version + '-recomended'] = project.version
-        if (!json.containsKey(project.minecraft.version)) json.put(project.minecraft.version, new HashMap<>())
-        def version = json[project.minecraft.version]
-        version.put(project.version, fullLog)
-        updateFile.write JsonOutput.prettyPrint(JsonOutput.toJson(json))
-    }
-}
-
-
-task deobfJar(type: Jar, dependsOn: 'jar') {
-    from sourceSets.main.output
-    from "LICENSE.txt"
-    classifier "dev"
-    appendix = project.minecraft.version
-}
-sourceJar {
-    from "LICENSE.txt"
-    exclude("com/**")
-    classifier "src"
-    appendix = project.minecraft.version
-}
-//noinspection GroovyAssignabilityCheck
-jar {
-    from "LICENSE.txt"
-    exclude("com/**")
-    appendix = project.minecraft.version
-}
-artifacts {
-    archives deobfJar
-}
-
-idea {
-    project {
-        copyright {
-            name = 'New BSD License'
-            license = file('LICENSE.txt')
-        }
-    }
-}
-
-//noinspection GroovyAssignabilityCheck
-uploadArchives {
-    if (project.hasProperty("dddUser") && project.hasProperty("dddUrl") && project.hasProperty("dddPass")) {
-        repositories {
-            mavenDeployer {
-                repository(url: dddUrl) {
-                    authentication(userName: dddUser, password: dddPass)
-                }
-                pom {
-                    groupId = project.group
-                    version = project.minecraft.version + "-" + project.version
-                    artifactId = project.archivesBaseName
-                    project {
-                        name project.archivesBaseName
-                        packaging 'jar'
-                        description = project.description
-                        url 'https://github.com/' + githuborg + '/' + project.archivesBaseName
-
-                        scm {
-                            url 'https://github.com/' + githuborg + '/' + project.archivesBaseName
-                            connection 'scm:git:git://github.com/' + githuborg + '/' + project.archivesBaseName + '.git'
-                            developerConnection 'scm:git:git@github.com:' + githuborg + '/' + project.archivesBaseName + '.git'
-                        }
-
-                        issueManagement {
-                            system 'github'
-                            url 'https://github.com/' + githuborg + '/' + project.archivesBaseName + '/issues'
-                        }
-
-                        licenses  {
-                            license  {
-                                name 'New BSD License'
-                                url 'https://raw.github.com/' + githuborg + '/' + project.archivesBaseName + '/master/LICENCE.txt'
-                                distribution 'repo'
-                            }
-                        }
-
-                        developers {
-                            developer {
-                                id 'Dries007'
-                                name 'Dries007'
-                                roles { role 'developer' }
-                            }
-                            developer {
-                                id 'Claycorp'
-                                name 'Claycorp'
-                                roles { role 'developer' }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "mcmod.info"
     }
 }

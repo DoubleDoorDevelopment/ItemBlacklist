@@ -34,13 +34,15 @@ public class ServerEventHandlers
     public void multiPlaceEvent(BlockEvent.MultiPlaceEvent event)
     {
         EntityPlayer player = event.getPlayer();
-        ItemStack itemInHand = event.getItemInHand();
-        if (player == null || itemInHand == null) return;
+        ItemStack itemInMainHand = player.getHeldItemMainhand();
+        ItemStack itemInOffHand = player.getHeldItemOffhand();
+        if (itemInMainHand.isEmpty() || itemInOffHand.isEmpty()) return;
         if (!Helper.shouldCare(event.getPlayer())) return;
-        if (GlobalBanList.isBanned(player.dimension, itemInHand))
+        if (GlobalBanList.isBanned(player.dimension, itemInMainHand) || GlobalBanList.isBanned(player.dimension, itemInOffHand))
         {
             player.sendStatusMessage(new TextComponentString(ItemBlacklist.message), true);
-            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+            if (ItemBlacklist.log)
+                ItemBlacklist.getLogger().info("{} tried to use {} or {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInMainHand.getDisplayName(), itemInOffHand.getDisplayName(), event.getPos());
             if (event.isCancelable())
                 event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
@@ -52,11 +54,11 @@ public class ServerEventHandlers
                 IBlockState blockState = blockSnapshot.getCurrentBlock();
                 Block block = blockState.getBlock();
                 Item item = Item.getItemFromBlock(block);
-                //if (item == null) continue;
                 ItemStack stack = new ItemStack(item, 1, block.damageDropped(blockState));
                 if (!GlobalBanList.isBanned(player.dimension, stack)) continue;
                 player.sendStatusMessage(new TextComponentString(ItemBlacklist.message), true);
-                if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+                if (ItemBlacklist.log)
+                    ItemBlacklist.getLogger().info("{} tried to use {} or {} at {} (Place Block. Banned Item placed)", player.getName(), itemInMainHand.getDisplayName(), itemInOffHand.getDisplayName(), event.getPos());
                 if (event.isCancelable())
                     event.setCanceled(true);
                 GlobalBanList.process(player.dimension, player.inventory);
@@ -69,17 +71,19 @@ public class ServerEventHandlers
     public void blockPlaceEvent(BlockEvent.PlaceEvent event)
     {
         EntityPlayer player = event.getPlayer();
-        ItemStack itemInHand = event.getItemInHand();
-        if (player == null || itemInHand == null) return;
+        ItemStack itemInMainHand = player.getHeldItemMainhand();
+        ItemStack itemInOffHand = player.getHeldItemOffhand();
+        if (itemInMainHand.isEmpty() || itemInOffHand.isEmpty()) return;
         if (!Helper.shouldCare(player)) return;
         IBlockState blockState = event.getBlockSnapshot().getCurrentBlock();
         Block block = blockState.getBlock();
         Item item = Item.getItemFromBlock(block);
-        ItemStack stack = item == null ? null : new ItemStack(item, 1, block.damageDropped(blockState));
-        if (GlobalBanList.isBanned(player.dimension, itemInHand))
+        ItemStack stack = new ItemStack(item, 1, block.damageDropped(blockState));
+        if (GlobalBanList.isBanned(player.dimension, itemInMainHand) || GlobalBanList.isBanned(player.dimension, itemInOffHand))
         {
             player.sendStatusMessage(new TextComponentString(ItemBlacklist.message), true);
-            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+            if (ItemBlacklist.log)
+                ItemBlacklist.getLogger().info("{} tried to use {} or {} at {} (Place Block. Banned Item in hand)", player.getName(), itemInMainHand.getDisplayName(), itemInOffHand.getDisplayName(), event.getPos());
             if (event.isCancelable())
                 event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
@@ -87,7 +91,8 @@ public class ServerEventHandlers
         else if (GlobalBanList.isBanned(player.dimension, stack))
         {
             player.sendStatusMessage(new TextComponentString(ItemBlacklist.message), true);
-            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} (Place Block. Banned Item placed.)", player.getName(), itemInHand.getDisplayName(), event.getPos());
+            if (ItemBlacklist.log)
+                ItemBlacklist.getLogger().info("{} tried to use {} or {} at {} (Place Block. Banned Item placed)", player.getName(), itemInMainHand.getDisplayName(), itemInOffHand.getDisplayName(), event.getPos());
             if (event.isCancelable())
                 event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
@@ -103,7 +108,8 @@ public class ServerEventHandlers
         if (GlobalBanList.isBanned(player.dimension, stack))
         {
             player.sendStatusMessage(new TextComponentString(ItemBlacklist.message), true);
-            if (ItemBlacklist.log) ItemBlacklist.getLogger().info("{} tried to use {} at {} ({})", player.getName(), stack.getDisplayName(), event.getPos(), event.getFace());
+            if (ItemBlacklist.log)
+                ItemBlacklist.getLogger().info("{} tried to use {} at {} ({})", player.getName(), stack.getDisplayName(), event.getPos(), event.getFace());
             if (event.isCancelable())
                 event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);

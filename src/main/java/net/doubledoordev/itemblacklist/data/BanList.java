@@ -30,7 +30,8 @@ public class BanList
 
     public boolean isBanned(ItemStack itemStack)
     {
-        for (BanListEntry banListEntry : banListEntryMap.get(itemStack.getItem())) if (banListEntry.isBanned(itemStack.getItemDamage())) return true;
+        for (BanListEntry banListEntry : banListEntryMap.get(itemStack.getItem()))
+            if (banListEntry.isBanned(itemStack.getItemDamage())) return true;
         return false;
     }
 
@@ -58,7 +59,8 @@ public class BanList
             for (JsonElement element : json.getAsJsonArray())
             {
                 BanListEntry entry = context.deserialize(element, BanListEntry.class);
-                if (banList.banListEntryMap.containsValue(entry)) throw new IllegalArgumentException("Duplicate ban list entry.");
+                if (banList.banListEntryMap.containsValue(entry))
+                    throw new IllegalArgumentException("Duplicate ban list entry.");
                 banList.banListEntryMap.put(entry.getItem(), entry);
             }
             return banList;

@@ -36,6 +36,12 @@ public class ClientEventHandlers
 
     }
 
+    public static void init()
+    {
+        final RenderItem renderItem = Minecraft.getMinecraft().getRenderItem();
+        renderItem.getItemModelMesher().register(ItemBlacklisted.I, 0, new ModelResourceLocation(ItemBlacklisted.I.getRegistryName(), "inventory"));
+    }
+
     @SubscribeEvent
     public void drawScreenEvent(final GuiScreenEvent.DrawScreenEvent.Post event) throws IllegalAccessException
     {
@@ -57,7 +63,7 @@ public class ClientEventHandlers
 
                 GlStateManager.pushMatrix();
                 GlStateManager.translate(guiLeft, guiTop, 1);
-                GlStateManager.translate(slot.xPos+8, slot.yPos+8, 1);
+                GlStateManager.translate(slot.xPos + 8, slot.yPos + 8, 1);
                 GlStateManager.scale(15F, -15F, 10F);
                 Minecraft.getMinecraft().getRenderItem().renderItem(unpacked, ItemCameraTransforms.TransformType.FIXED);
                 GlStateManager.popMatrix();
@@ -118,11 +124,5 @@ public class ClientEventHandlers
                 }
             }
         }
-    }
-
-    public static void init()
-    {
-        final RenderItem renderItem = Minecraft.getMinecraft().getRenderItem();
-        renderItem.getItemModelMesher().register(ItemBlacklisted.I, 0, new ModelResourceLocation(ItemBlacklisted.I.getRegistryName(), "inventory"));
     }
 }

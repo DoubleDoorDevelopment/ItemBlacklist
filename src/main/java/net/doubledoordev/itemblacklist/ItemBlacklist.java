@@ -7,11 +7,14 @@ import net.doubledoordev.itemblacklist.util.CommandUnpack;
 import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
 import net.doubledoordev.itemblacklist.util.ServerEventHandlers;
 import net.minecraft.command.CommandHandler;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
@@ -20,13 +23,18 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 
-import static net.doubledoordev.itemblacklist.Helper.*;
+import static net.doubledoordev.itemblacklist.Helper.MODID;
+import static net.doubledoordev.itemblacklist.Helper.MOD_GUI_FACTORY;
+import static net.minecraftforge.common.ForgeVersion.MOD_ID;
 import static net.minecraftforge.common.config.Configuration.CATEGORY_GENERAL;
 
 @SuppressWarnings("DefaultAnnotationParam")
-@Mod(modid = MODID, dependencies = "before:*", useMetadata = false, updateJSON = UPDATE_URL, guiFactory = MOD_GUI_FACTORY)
+@Mod(modid = MODID, dependencies = "before:*", useMetadata = false, guiFactory = MOD_GUI_FACTORY)
 public class ItemBlacklist
 {
+    @SidedProxy(clientSide = "net.doubledoordev.itemblacklist.client.Proxy", serverSide = "net.doubledoordev.itemblacklist.ItemBlacklist")
+    public static ItemBlacklist proxy;
+
     @Mod.Instance
     public static ItemBlacklist instance;
     public static String message;
@@ -51,8 +59,6 @@ public class ItemBlacklist
     public void preInit(FMLPreInitializationEvent event)
     {
         logger = event.getModLog();
-
-        GameRegistry.register(ItemBlacklisted.I);
 
         if (event.getSide().isClient()) MinecraftForge.EVENT_BUS.register(ClientEventHandlers.I);
 
@@ -108,5 +114,22 @@ public class ItemBlacklist
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
     {
         if (event.getModID().equals(MODID)) updateConfig();
+    }
+
+    @GameRegistry.ObjectHolder(MOD_ID)
+    public static class Items
+    {
+        @GameRegistry.ObjectHolder("itemblacklisted")
+        public static ItemBlacklisted itemItemBlacklisted;
+    }
+
+    @Mod.EventBusSubscriber
+    public static class ObjectRegistryHandler
+    {
+        @SubscribeEvent
+        public static void addItems(RegistryEvent.Register<Item> event)
+        {
+            event.getRegistry().register(ItemBlacklisted.I);
+        }
     }
 }

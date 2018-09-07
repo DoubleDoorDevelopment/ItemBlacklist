@@ -40,6 +40,30 @@ import java.util.Set;
 
 public class ModConfigGuiFactory implements IModGuiFactory
 {
+    @Override
+    public void initialize(Minecraft minecraftInstance)
+    {
+
+    }
+
+    @Override
+    public boolean hasConfigGui()
+    {
+        return true;
+    }
+
+    @Override
+    public GuiScreen createConfigGui(GuiScreen parentScreen)
+    {
+        return new ModConfigGuiFactory.D3ConfigGuiScreen(parentScreen);
+    }
+
+    @Override
+    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories()
+    {
+        return null;
+    }
+
     public static class D3ConfigGuiScreen extends GuiConfig
     {
         public D3ConfigGuiScreen(GuiScreen parentScreen)
@@ -67,39 +91,5 @@ public class ModConfigGuiFactory implements IModGuiFactory
             }
             return list;
         }
-    }
-
-    @Override
-    public void initialize(Minecraft minecraftInstance)
-    {
-
-    }
-
-    @Override
-    public boolean hasConfigGui() {
-        return false;
-    }
-
-    @Override
-    public GuiScreen createConfigGui(GuiScreen parentScreen) {
-        return null;
-    }
-
-    @Override
-    public Class<? extends GuiScreen> mainConfigGuiClass()
-    {
-        return ModConfigGuiFactory.D3ConfigGuiScreen.class;
-    }
-
-    @Override
-    public Set<RuntimeOptionCategoryElement> runtimeGuiCategories()
-    {
-        return null;
-    }
-
-    @Override
-    public IModGuiFactory.RuntimeOptionGuiHandler getHandlerFor(IModGuiFactory.RuntimeOptionCategoryElement element)
-    {
-        return null;
     }
 }

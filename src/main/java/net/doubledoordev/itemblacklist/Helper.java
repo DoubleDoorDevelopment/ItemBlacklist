@@ -15,8 +15,6 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 public class Helper
 {
     public static final String MODID = "itemblacklist";
-    public static final String NAME = "ItemBlacklist";
-    public static final String UPDATE_URL = "http://doubledoordev.net/" + NAME + ".json";
     /**
      * @see net.doubledoordev.itemblacklist.client.ModConfigGuiFactory
      */

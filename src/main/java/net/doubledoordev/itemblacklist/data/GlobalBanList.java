@@ -79,23 +79,10 @@ public class GlobalBanList
         }
     }
 
-    public void save()
-    {
-        try
-        {
-            if (!this.file.exists()) this.file.createNewFile();
-            FileUtils.writeStringToFile(this.file, Helper.GSON.toJson(this), "UTF-8");
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static boolean isBanned(int dimensionId, ItemStack item)
     {
         if (worldInstance == null) throw new IllegalStateException("Ban list not initialized.");
-        if (item == null || item.getItem() == null) return false;
+        if (item.isEmpty()) return false;
         if (packInstance != null)
         {
             if (packInstance.global.isBanned(item)) return true;
@@ -126,7 +113,7 @@ public class GlobalBanList
             }
             else
             {
-                slot.putStack(null);
+                slot.putStack(ItemStack.EMPTY);
                 if (!player.inventory.addItemStackToInventory(newStack) || newStack.getCount() > 0)
                 {
                     EntityItem entityitem = player.dropItem(newStack, false);
@@ -172,7 +159,7 @@ public class GlobalBanList
 
     public static ItemStack process(int dim, ItemStack itemStack, boolean unpackOnly)
     {
-        if (itemStack == null) return null;
+        if (itemStack.isEmpty()) return ItemStack.EMPTY;
 
         boolean packed = itemStack.getItem() == ItemBlacklisted.I && ItemBlacklisted.canUnpack(itemStack);
         ItemStack unpacked = packed ? ItemBlacklisted.unpack(itemStack) : itemStack;
@@ -182,6 +169,19 @@ public class GlobalBanList
         else if (banned && !packed) return ItemBlacklisted.pack(itemStack);
 
         return itemStack;
+    }
+
+    public void save()
+    {
+        try
+        {
+            if (!this.file.exists()) this.file.createNewFile();
+            FileUtils.writeStringToFile(this.file, Helper.GSON.toJson(this), "UTF-8");
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     public BanList checkDuplicate(String dimensions)
@@ -197,7 +197,8 @@ public class GlobalBanList
             {
                 if (banList.getDimension().equals(dimensions))
                 {
-                    if (match != null) throw new IllegalStateException("Duplicate banlist key. This is a serious issue. You should manually try to fix the json file!");
+                    if (match != null)
+                        throw new IllegalStateException("Duplicate banlist key. This is a serious issue. You should manually try to fix the json file!");
                     match = banList;
                 }
             }
@@ -216,7 +217,8 @@ public class GlobalBanList
                 dimesionMap.put(i, match);
             }
         }
-        if (match.banListEntryMap.containsEntry(banListEntry.getItem(), banListEntry)) throw new IllegalArgumentException("Duplicate ban list entry.");
+        if (match.banListEntryMap.containsEntry(banListEntry.getItem(), banListEntry))
+            throw new IllegalArgumentException("Duplicate ban list entry.");
         match.banListEntryMap.put(banListEntry.getItem(), banListEntry);
         save();
     }

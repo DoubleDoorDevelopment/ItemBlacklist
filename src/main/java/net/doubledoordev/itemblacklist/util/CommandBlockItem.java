@@ -31,18 +31,6 @@ public class CommandBlockItem extends CommandBase
 {
     public static final CommandBlockItem I = new CommandBlockItem();
 
-    public static class Pair<K, V>
-    {
-        public K k;
-        public V v;
-
-        public Pair(K k, V v)
-        {
-            this.k = k;
-            this.v = v;
-        }
-    }
-
     private CommandBlockItem() {}
 
     @Override
@@ -114,8 +102,10 @@ public class CommandBlockItem extends CommandBase
                 try
                 {
                     Pair<String, BanListEntry> toBan = parse(sender, args);
-                    if (GlobalBanList.worldInstance.remove(toBan.k, toBan.v)) sender.sendMessage(new TextComponentString("Unbanned " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(GREEN)));
-                    else sender.sendMessage(new TextComponentString("Can't unban " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(RED)));
+                    if (GlobalBanList.worldInstance.remove(toBan.k, toBan.v))
+                        sender.sendMessage(new TextComponentString("Unbanned " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(GREEN)));
+                    else
+                        sender.sendMessage(new TextComponentString("Can't unban " + toBan.v.toString() + " in " + toBan.k).setStyle(new Style().setColor(RED)));
                 }
                 catch (Exception e)
                 {
@@ -143,7 +133,8 @@ public class CommandBlockItem extends CommandBase
             try
             {
                 Helper.parseDimIds(args[i]);
-                if (dimensions != null) throw new WrongUsageException("Double dimension specifiers: " + dimensions + " AND " + args[i]);
+                if (dimensions != null)
+                    throw new WrongUsageException("Double dimension specifiers: " + dimensions + " AND " + args[i]);
                 dimensions = args[i];
                 continue;
             }
@@ -153,7 +144,8 @@ public class CommandBlockItem extends CommandBase
                 String[] split = args[i].split(":");
                 if (split.length > 3) throw new WrongUsageException("Item name not valid.");
                 meta = split.length == 3 ? parseInt(split[2]) : OreDictionary.WILDCARD_VALUE;
-                if (banListEntry != null) throw new WrongUsageException("Double item specifiers: " + banListEntry + " AND " + args[i]);
+                if (banListEntry != null)
+                    throw new WrongUsageException("Double item specifiers: " + banListEntry + " AND " + args[i]);
                 banListEntry = new BanListEntry(split[0] + ":" + split[1], meta);
                 continue;
             }
@@ -207,23 +199,27 @@ public class CommandBlockItem extends CommandBase
         }
         else
         {
-            if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME)) worldSet.add(GlobalBanList.worldInstance.getGlobal());
+            if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME))
+                worldSet.add(GlobalBanList.worldInstance.getGlobal());
             else worldSet.addAll(GlobalBanList.worldInstance.dimesionMap.get(getDimension(server, sender, args[1])));
 
             if (GlobalBanList.packInstance != null)
             {
-                if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME)) packSet.add(GlobalBanList.packInstance.getGlobal());
+                if (args[1].equalsIgnoreCase(GlobalBanList.GLOBAL_NAME))
+                    packSet.add(GlobalBanList.packInstance.getGlobal());
                 else packSet.addAll(GlobalBanList.packInstance.dimesionMap.get(getDimension(server, sender, args[1])));
             }
         }
-        if (worldSet.isEmpty()) sender.sendMessage(new TextComponentString("No world banned items.").setStyle(new Style().setColor(YELLOW)));
+        if (worldSet.isEmpty())
+            sender.sendMessage(new TextComponentString("No world banned items.").setStyle(new Style().setColor(YELLOW)));
         else
         {
             sender.sendMessage(new TextComponentString("World banned items:").setStyle(new Style().setColor(YELLOW)));
             list(sender, worldSet);
         }
 
-        if (packSet.isEmpty()) sender.sendMessage(new TextComponentString("No pack banned items. ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
+        if (packSet.isEmpty())
+            sender.sendMessage(new TextComponentString("No pack banned items. ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
         else
         {
             sender.sendMessage(new TextComponentString("Pack banned items: ").setStyle(new Style().setColor(YELLOW)).appendSibling(new TextComponentString("[unchangeable]").setStyle(new Style().setColor(RED))));
@@ -248,7 +244,9 @@ public class CommandBlockItem extends CommandBase
         catch (EntityNotFoundException ignored)
         {
 
-        } catch (CommandException e) {
+        }
+        catch (CommandException e)
+        {
             e.printStackTrace();
         }
         throw new WrongUsageException("%s is not an entity or a number", arg);
@@ -262,12 +260,15 @@ public class CommandBlockItem extends CommandBase
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos)
     {
-        if (isUsernameIndex(args, args.length)) return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
-        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "reload", "pack", "unpack", "list", "ban", "unban");
+        if (isUsernameIndex(args, args.length))
+            return getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+        if (args.length == 1)
+            return getListOfStringsMatchingLastWord(args, "reload", "pack", "unpack", "list", "ban", "unban");
         if (args[0].equalsIgnoreCase("ban") || args[0].equalsIgnoreCase("unban"))
         {
             HashSet<String> set = new HashSet<>();
             set.add(GlobalBanList.GLOBAL_NAME);
+            // Large item sets will cause the player to lose connection from the server, I don't think there is a way around this.
             for (ResourceLocation rl : Item.REGISTRY.getKeys())
                 set.add(rl.toString());
             return getListOfStringsMatchingLastWord(args, set);
@@ -287,5 +288,17 @@ public class CommandBlockItem extends CommandBase
                 return arg == 2;
         }
         return false;
+    }
+
+    public static class Pair<K, V>
+    {
+        public K k;
+        public V v;
+
+        public Pair(K k, V v)
+        {
+            this.k = k;
+            this.v = v;
+        }
     }
 }

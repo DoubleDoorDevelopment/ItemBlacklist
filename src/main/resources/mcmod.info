@@ -1,21 +1,20 @@
-{
-  "modListVersion": 2,
-  "modList": [{
+[
+  {
     "modid": "itemblacklist",
-    "name": "ItemBlacklist",
-    "description": "${description}",
+    "name": "Item Blacklist",
+    "description": "Block players from using items! Dim configurable!",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://github.com/${githuborg}/${modid}",
+    "url": "",
     "updateUrl": "",
-    "authorList": [ "Dries007", "DoubleDoor team" ],
+    "authorList": [
+      "DoubleDoorDev",
+      "Claycorp",
+      "Dries007"
+    ],
     "credits": "",
     "logoFile": "",
     "screenshots": [],
-    "parent": "",
-    "requiredMods": [ "Forge" ],
-    "dependencies": [ ],
-    "dependants": [ ],
-    "useDependencyInformation": true
-  }]
-}
+    "dependencies": []
+  }
+]
