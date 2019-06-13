@@ -3,13 +3,13 @@ package net.doubledoordev.itemblacklist.util;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
+import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -115,7 +115,6 @@ public class ServerEventHandlers
             if (event.isCancelable())
                 event.setCanceled(true);
             GlobalBanList.process(player.dimension, player.inventory);
-            ((EntityPlayerMP) player).sendContainerToPlayer(player.inventoryContainer);
         }
     }
 
@@ -125,7 +124,6 @@ public class ServerEventHandlers
         if (!Helper.shouldCare(event.player)) return;
         {
             GlobalBanList.process(event.toDim, event.player.inventory);
-            ((EntityPlayerMP) event.player).sendContainerToPlayer(event.player.inventoryContainer);
         }
 
     }
@@ -145,16 +143,13 @@ public class ServerEventHandlers
         if (!Helper.shouldCare(player)) return;
         event.getItem().setItem(GlobalBanList.process(player.dimension, event.getItem().getItem()));
     }
-//      TODO: Find a fix for this that works
-//    @SubscribeEvent(priority = EventPriority.HIGHEST)
-//    public void playerOpenContainerEvent(PlayerOpenContainerEvent event)
-//    {
-//        EntityPlayer player = event.getEntityPlayer();
-//        if (!Helper.shouldCare(player)) return;
-//        if (player.getEntityData().getInteger(Helper.MODID) != player.openContainer.hashCode()) // Crude is inventory changed
-//        {
-//            player.getEntityData().setInteger(Helper.MODID, player.openContainer.hashCode());
-//            GlobalBanList.process(player.dimension, player.openContainer, player);
-//        }
-//    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void playerOpenContainerEvent(PlayerContainerEvent.Close event)
+    {
+        EntityPlayer player = event.getEntityPlayer();
+        if (!Helper.shouldCare(player)) return;
+        if (ItemBlacklist.instance.containerban)
+            GlobalBanList.process(player.dimension, player.openContainer, player);
+    }
 }

@@ -1,11 +1,6 @@
 package net.doubledoordev.itemblacklist;
 
-import net.doubledoordev.itemblacklist.client.ClientEventHandlers;
-import net.doubledoordev.itemblacklist.data.GlobalBanList;
-import net.doubledoordev.itemblacklist.util.CommandBlockItem;
-import net.doubledoordev.itemblacklist.util.CommandUnpack;
-import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
-import net.doubledoordev.itemblacklist.util.ServerEventHandlers;
+import org.apache.logging.log4j.Logger;
 import net.minecraft.command.CommandHandler;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,7 +16,13 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import org.apache.logging.log4j.Logger;
+
+import net.doubledoordev.itemblacklist.client.ClientEventHandlers;
+import net.doubledoordev.itemblacklist.data.GlobalBanList;
+import net.doubledoordev.itemblacklist.util.CommandBlockItem;
+import net.doubledoordev.itemblacklist.util.CommandUnpack;
+import net.doubledoordev.itemblacklist.util.ItemBlacklisted;
+import net.doubledoordev.itemblacklist.util.ServerEventHandlers;
 
 import static net.doubledoordev.itemblacklist.Helper.MODID;
 import static net.doubledoordev.itemblacklist.Helper.MOD_GUI_FACTORY;
@@ -38,8 +39,9 @@ public class ItemBlacklist
     @Mod.Instance
     public static ItemBlacklist instance;
     public static String message;
-
     public static boolean log;
+    public boolean containerban;
+
     private boolean unpack4all;
     private Configuration configuration;
     private Logger logger;
@@ -77,6 +79,8 @@ public class ItemBlacklist
         message = configuration.getString("message", CATEGORY_GENERAL, "Now is not the time to use that. ~Prof. Oak", "The message you get when using an item that is banned.");
         log = configuration.getBoolean("log", CATEGORY_GENERAL, false, "Log every instance of any banned item used. (SPAM WARNING!)");
         unpack4all = configuration.getBoolean("unpack4all", CATEGORY_GENERAL, true, "Let everyone unpack items by using the 'unpack' command. So items can be used in crafting.");
+        containerban = configuration.getBoolean("containerban", CATEGORY_GENERAL, false, "Got a really stubborn item to ban? Enable this! Items will be banned whenever an inventory closes.");
+
 
         if (configuration.hasChanged()) configuration.save();
 
