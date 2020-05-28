@@ -30,7 +30,7 @@ import static net.minecraftforge.common.ForgeVersion.MOD_ID;
 import static net.minecraftforge.common.config.Configuration.CATEGORY_GENERAL;
 
 @SuppressWarnings("DefaultAnnotationParam")
-@Mod(modid = MODID, dependencies = "before:*", useMetadata = false, guiFactory = MOD_GUI_FACTORY)
+@Mod(modid = MODID, dependencies = "required:forge@[14.23.5.2779,);before:*", useMetadata = false, guiFactory = MOD_GUI_FACTORY)
 public class ItemBlacklist
 {
     @SidedProxy(clientSide = "net.doubledoordev.itemblacklist.client.Proxy", serverSide = "net.doubledoordev.itemblacklist.ItemBlacklist")
