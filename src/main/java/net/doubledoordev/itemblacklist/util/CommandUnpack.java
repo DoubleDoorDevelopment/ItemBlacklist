@@ -4,7 +4,9 @@ import net.doubledoordev.itemblacklist.data.GlobalBanList;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 
@@ -32,7 +34,7 @@ public class CommandUnpack extends CommandBase
     @Override
     public boolean checkPermission(MinecraftServer server, ICommandSender sender)
     {
-        return sender instanceof EntityPlayer;
+        return sender.getCommandSenderEntity() instanceof EntityPlayer;
     }
 
     @Override
@@ -44,8 +46,20 @@ public class CommandUnpack extends CommandBase
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        EntityPlayer player = getCommandSenderAsPlayer(sender);
+        EntityPlayer player = getCommandSenderEntityAsPlayer(sender);
         int count = GlobalBanList.process(player.dimension, player.inventory, true);
         sender.sendMessage(new TextComponentString("Unlocked " + count + " items."));
+    }
+
+    private static EntityPlayerMP getCommandSenderEntityAsPlayer(ICommandSender sender) throws PlayerNotFoundException
+    {
+        if (sender.getCommandSenderEntity() instanceof EntityPlayerMP)
+        {
+            return (EntityPlayerMP) sender.getCommandSenderEntity();
+        }
+        else
+        {
+            throw new PlayerNotFoundException("commands.generic.player.unspecified");
+        }
     }
 }
